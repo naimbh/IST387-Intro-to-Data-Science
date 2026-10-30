@@ -102,6 +102,7 @@ svg .mk.out2{stroke:var(--warn)} svg .outf{fill:var(--warn)} svg .lab.warnt{fill
 @media (max-width:560px){.why dl div{grid-template-columns:1fr;gap:2px}}
 .part{border-top:3px solid var(--ink);padding-top:16px;display:flex;flex-direction:column;gap:8px;scroll-margin-top:64px}
 .part h2{font-size:2rem}
+#bazaar{scroll-margin-top:64px}
 
 /* playground */
 .play{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
@@ -129,7 +130,7 @@ details .a{padding-top:8px;display:flex;flex-direction:column;gap:6px}
 </style>
 
 <nav class="jump" aria-label="Jump to section"><div class="row">
-  <a href="#partA">A · Describe</a><a href="#try">Try it</a><a href="#center">Center</a><a href="#spread">Spread</a><a href="#quantiles">Quantiles</a><a href="#shape">Shape</a><a href="#counts">Categories</a><a href="#groups">By group</a>
+  <a href="#partA">A · Describe</a><a href="#try">Try it</a><a href="#center">Center</a><a href="#spread">Spread</a><a href="#quantiles">Quantiles</a><a href="#bazaar">Bazaar story</a><a href="#shape">Shape</a><a href="#counts">Categories</a><a href="#groups">By group</a>
   <a href="#partB">B · Sampling</a><a href="#lln">LLN</a><a href="#clt">CLT</a><a href="#mystery">Mystery sample</a>
   <a href="#partC">C · Models</a><a href="#lmout">lm output</a><a href="#accuracy">Accuracy</a><a href="#fit">Overfitting</a>
   <a href="#cheat">Cheat sheet</a><a href="#quiz">Quiz</a>
@@ -290,6 +291,55 @@ summary(x)
     <li>The IQR resists outliers like the median does, because it ignores the top and bottom quarters.</li>
     <li>In the homework, you write your own function, <code>printVecInfo()</code>, that prints the main stats of any vector you give it. For its 0.05 and 0.95 quantiles, it uses <code>quantile(x, c(0.05, 0.95))</code>, exactly as in the mtcars line above.</li>
   </ul>
+
+  <h3 id="bazaar">One story for sections 1 to 3: the Dhaka bazaar</h3>
+  <p>A neighborhood chairman in Dhaka wants to report two things about the people at the local bazaar (an open-air market): their <b>typical</b> daily income (the center) and how much their incomes <b>differ</b> from one another (the spread). Incomes are in taka (৳), Bangladesh's currency. He hires two teams. Here are the nine people working at the stalls today:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Who</th><th>Daily income (৳), sorted from poorest to richest</th></tr></thead>
+    <tbody>
+      <tr><td>9 stall workers (tea sellers, rickshaw pullers, shopkeepers)</td><td>300, 400, 500, 500, 600, 700, 800, 900, 1,200</td></tr>
+    </tbody>
+  </table></div>
+  <p>Then a billionaire from Gulshan, Dhaka's richest area, stops his SUV to buy mangoes. He makes ৳3,00,000 (3 lakh, or 300,000) a day. He is now one of the 10 people in the bazaar.</p>
+
+  <h3>Team 1 uses every taka: the mean and the sd</h3>
+  <ul>
+    <li><b>Center:</b> they pool everyone's takas and share them out equally. That is the <b class="mean">mean</b>.</li>
+    <li><b>Spread:</b> they measure how far each person is from the mean, square those distances, average them and take the square root. That is the <b>standard deviation</b> (section 2).</li>
+  </ul>
+  <h3>Team 2 lines people up: the median, quantiles and IQR</h3>
+  <ul>
+    <li><b>Center:</b> they line everyone up from poorest to richest and point at the person exactly halfway down the line. That is the <b class="med">median</b>. With an even number of people, it is halfway between the two middle people.</li>
+    <li><b>Spread:</b> they put checkpoints, called <b>quantiles</b>, at 25% and 75% of the way along the line. They send the poorest quarter and the richest quarter home and look only at the middle half. The income gap between the richest and the poorest person still standing is the <b>IQR</b>.</li>
+  </ul>
+
+  <h3>What the billionaire does to each team's report</h3>
+<pre>stalls  &lt;- c(300, 400, 500, 500, 600, 700, 800, 900, 1200)
+bazaar  &lt;- c(stalls, 300000)   <span class="c"># add the billionaire</span>
+mean(bazaar); sd(bazaar); median(bazaar); IQR(bazaar)</pre>
+  <div class="tbl"><table>
+    <thead><tr><th>Statistic</th><th class="r">9 stall workers</th><th class="r">+ billionaire</th><th>What happened</th></tr></thead>
+    <tbody>
+      <tr><td>Mean (Team 1)</td><td class="r">656</td><td class="r"><b>30,590</b></td><td>Becomes about 47 times bigger. Nobody at the stalls earns anywhere near ৳30,590.</td></tr>
+      <tr><td>sd (Team 1)</td><td class="r">279</td><td class="r"><b>94,661</b></td><td>Explodes, because his distance from the mean is huge and then gets squared.</td></tr>
+      <tr><td>Median (Team 2)</td><td class="r">600</td><td class="r">650</td><td>Barely moves. He only adds one more person to the rich end of the line.</td></tr>
+      <tr><td>IQR (Team 2)</td><td class="r">300</td><td class="r">375</td><td>Barely moves. He is in the richest quarter, which was sent home.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="plain">Team 1's math is right, but its report is misleading: it says the typical person makes ৳30,590 a day. Team 1 works well when values bunch evenly around the middle with no extreme values (a <b>bell curve</b>, section 4). When a few values sit far out on one side (<b>skewed</b> data, like incomes), use Team 2: the median for the center and the IQR for the spread.</p>
+
+  <h3>The sequel: why <code>sd()</code> divides by n − 1</h3>
+  <p>A year later, the chairman asks Team 1 to describe a bigger market in Rajbari, a small district town. They have no time to ask everyone there (the <b>population</b>). They ask only 10 random people at a tong, a roadside tea stall (a <b>sample</b>).</p>
+  <ul>
+    <li><b>The problem:</b> a small sample usually misses the poorest and the richest people in town, so the 10 incomes sit closer together than the whole town's incomes do. Dividing by n = 10 would make the town look more equal than it really is.</li>
+    <li><b>The fix:</b> divide by n − 1 = 9 instead. A smaller bottom number gives a slightly bigger answer, which makes up for the extremes the sample probably missed.</li>
+  </ul>
+<pre>rajbari &lt;- c(250, 350, 400, 450, 500, 600, 650, 700, 900, 1100)
+squares &lt;- sum((rajbari - mean(rajbari))^2)   <span class="c"># 609000</span>
+sqrt(squares / 10)   <span class="c"># 246.8  divide by n: too small on average</span>
+sqrt(squares / 9)    <span class="c"># 260.1  divide by n − 1</span>
+sd(rajbari)          <span class="c"># 260.1  R's sd() already divides by n − 1</span></pre>
+  <p class="plain">The fix isn't exact for any single sample, but it is right <b>on average</b>. In a simulation of 20,000 samples of 10 people, dividing by n gave a variance about 10% too small, while dividing by n − 1 matched the town's true variance. With large samples, the difference between n and n − 1 almost disappears.</p>
 </section>
 
 <!-- SHAPE -->
