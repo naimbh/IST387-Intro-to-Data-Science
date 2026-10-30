@@ -314,18 +314,20 @@ summary(x)
   </ul>
 
   <h3>What the billionaire does to each team's report</h3>
+  <p>The first column uses only the 9 stall workers. The second recalculates every statistic for all 10 people, the 9 workers plus the billionaire. Comparing the two shows what one extreme person does to each statistic.</p>
 <pre>stalls  &lt;- c(300, 400, 500, 500, 600, 700, 800, 900, 1200)
 bazaar  &lt;- c(stalls, 300000)   <span class="c"># add the billionaire</span>
 mean(bazaar); sd(bazaar); median(bazaar); IQR(bazaar)</pre>
   <div class="tbl"><table>
-    <thead><tr><th>Statistic</th><th class="r">9 stall workers</th><th class="r">+ billionaire</th><th>What happened</th></tr></thead>
+    <thead><tr><th>Statistic</th><th class="r">9 stall workers only</th><th class="r">All 10 (with billionaire)</th><th>What it means</th></tr></thead>
     <tbody>
-      <tr><td>Mean (Team 1)</td><td class="r">656</td><td class="r"><b>30,590</b></td><td>Becomes about 47 times bigger. Nobody at the stalls earns anywhere near ৳30,590.</td></tr>
-      <tr><td>sd (Team 1)</td><td class="r">279</td><td class="r"><b>94,661</b></td><td>Explodes, because his distance from the mean is huge and then gets squared.</td></tr>
-      <tr><td>Median (Team 2)</td><td class="r">600</td><td class="r">650</td><td>Barely moves. He only adds one more person to the rich end of the line.</td></tr>
-      <tr><td>IQR (Team 2)</td><td class="r">300</td><td class="r">375</td><td>Barely moves. He is in the richest quarter, which was sent home.</td></tr>
+      <tr><td>Mean (Team 1)</td><td class="r">656</td><td class="r"><b>30,590</b></td><td><b>9 workers:</b> a fair “typical” income. <b>All 10:</b> about 47 times bigger, and nobody at the stalls earns anywhere near ৳30,590.</td></tr>
+      <tr><td>sd (Team 1)</td><td class="r">279</td><td class="r"><b>94,661</b></td><td><b>9 workers:</b> a typical worker earns about ৳279 more or less than the ৳656 average, so most make roughly ৳380 to ৳930. <b>All 10:</b> it now says a typical person is ৳94,661 from the average, which fits nobody. The workers are each about ৳30,000 below it and the billionaire is about ৳270,000 above it. His one huge distance gets squared and swamps the rest.</td></tr>
+      <tr><td>Median (Team 2)</td><td class="r">600</td><td class="r">650</td><td><b>Both:</b> the person in the middle of the line. The billionaire only adds one more person at the rich end, so the middle barely shifts.</td></tr>
+      <tr><td>IQR (Team 2)</td><td class="r">300</td><td class="r">375</td><td><b>9 workers:</b> after dropping the poorest and richest quarters, the middle half earns from ৳500 to ৳800, so ordinary incomes differ by about ৳300. <b>All 10:</b> the billionaire falls in the richest quarter, which is dropped. The middle half now runs from ৳500 to ৳875, which still describes the ordinary workers well.</td></tr>
     </tbody>
   </table></div>
+  <p class="plain">In one line: the sd and the IQR both measure how spread out incomes are. The sd uses everyone, so the billionaire wrecks it. The IQR uses only the middle half, so he barely changes it.</p>
   <p class="plain">Team 1's math is right, but its report is misleading: it says the typical person makes ৳30,590 a day. Team 1 works well when values bunch evenly around the middle with no extreme values (a <b>bell curve</b>, section 4). When a few values sit far out on one side (<b>skewed</b> data, like incomes), use Team 2: the median for the center and the IQR for the spread.</p>
 
   <h3>The sequel: why <code>sd()</code> divides by n − 1</h3>
