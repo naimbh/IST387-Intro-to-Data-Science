@@ -1,0 +1,22 @@
+# Original course materials must never be committed
+*.pdf
+*.pptx
+*.docx
+*-HW*.Rmd
+*-Lab*.Rmd
+*HW*.Rmd
+*Lab*.Rmd
+syllabus*
+
+# R and RStudio
+.Rhistory
+.RData
+.Rproj.user/
+*_files/
+*_cache/
+*.knit.md
+practice/*.html
+practice/*.csv
+
+# macOS
+.DS_Store

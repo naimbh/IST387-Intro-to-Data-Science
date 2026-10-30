@@ -1,0 +1,365 @@
+---
+title: "IST 387 Midterm Practice Lab: Answer Key"
+author: "Naim Bin Hasan"
+output: pdf_document
+---
+
+```{r include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff = 80), tidy = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Intro to Data Science - Midterm Practice Lab (Weeks 1-9): Answer Key
+
+This practice lab works like the weekly labs. Every question uses a data set that is already built into R or one of the course packages, so there is nothing to download. Write your code in each empty chunk and run it. Type your answers in the comment lines. This is the answer key.
+
+The exam is on paper, so try writing each answer on paper first, then type it here and check that it runs.
+
+Data sets used:
+
+* `mtcars` (base R): 32 cars and their specs
+* `airquality` (base R): daily air readings in New York, May to September 1973, with some missing values
+* `iris` (base R): flower measurements for three species
+* `state.x77` and `state.name` (base R): facts about the 50 US states
+* `economics` (ggplot2): US economic data by month
+* `GermanCredit` (caret): good and bad credit customers
+
+```{r}
+library(tidyverse)
+```
+
+---
+
+## Part 1: Vectors and lists (Weeks 1-2)
+
+1. Save the `Temp` column of `airquality` in a vector called `temps`. Find its length, mean and maximum. Then use `which.max()` to find which day had the highest temperature.
+
+```{r}
+temps <- airquality$Temp
+length(temps)
+mean(temps)
+max(temps)
+which.max(temps)
+```
+
+> ANSWER: 153 days. The mean is about 77.9, the max is 97, and it was day 120.
+
+2. How many days were hotter than 85 degrees? Use a logical test inside `sum()`. Then show only those temperatures.
+
+```{r}
+sum(temps > 85)
+temps[temps > 85]
+```
+
+> ANSWER: `temps > 85` gives TRUE or FALSE for each day, and `sum()` counts the TRUEs. Putting the same test inside the brackets keeps only the TRUE positions.
+
+3. Before you run it, guess the mode of `c(1, "a", TRUE)`. Then check with `mode()`.
+
+```{r}
+mode(c(1, "a", TRUE))
+```
+
+> ANSWER: "character". A vector holds only one type, and one string turns everything into text.
+
+4. Make a list called `car` that holds the name `"Mazda RX4"`, its `mpg` from `mtcars`, and the logical value `TRUE` for a manual gearbox. Get the mpg out of the list with `[[ ]]`. What do `car["mpg"]` and `car[["mpg"]]` each give back?
+
+```{r}
+car <- list(name = "Mazda RX4", mpg = mtcars["Mazda RX4", "mpg"], manual = TRUE)
+car[["mpg"]]
+str(car["mpg"])
+str(car[["mpg"]])
+```
+
+> ANSWER: `car[["mpg"]]` gives the number 21. `car["mpg"]` gives a smaller list that still holds the number.
+
+---
+
+## Part 2: Data frames in base R (Week 2)
+
+5. Make a copy of `mtcars` called `myCars`. Add a column called `name` that holds the row names. Then use `str()` and `dim()` to check it.
+
+```{r}
+myCars <- mtcars
+myCars$name <- rownames(myCars)
+str(myCars)
+dim(myCars)
+```
+
+6. Show the names of the cars with `mpg` over 25.
+
+```{r}
+myCars[myCars$mpg > 25, "name"]
+```
+
+> ANSWER: Six cars: Fiat 128, Honda Civic, Toyota Corolla, Fiat X1-9, Porsche 914-2 and Lotus Europa.
+
+7. Add a column `kpl` (kilometers per liter), which is `mpg * 0.425`. Then remove the `qsec` column.
+
+```{r}
+myCars$kpl <- myCars$mpg * 0.425
+myCars$qsec <- NULL
+colnames(myCars)
+```
+
+8. Sort `myCars` by `hp` from highest to lowest and show the name and hp of the top five cars.
+
+```{r}
+sortedCars <- myCars[order(-myCars$hp), ]
+head(sortedCars[, c("name", "hp")], 5)
+```
+
+> ANSWER: The Maserati Bora has the most hp (335).
+
+9. How many values of `Ozone` in `airquality` are missing? What is the mean `Ozone` when you skip them?
+
+```{r}
+sum(is.na(airquality$Ozone))
+mean(airquality$Ozone)
+mean(airquality$Ozone, na.rm = TRUE)
+```
+
+> ANSWER: 37 are missing. Without `na.rm = TRUE` the mean is NA. With it, the mean is about 42.1.
+
+---
+
+## Part 3: Tidyverse (Week 3)
+
+10. Using `airquality`, find the mean `Temp` for each `Month`, first with `group_by()` and `summarize()`, then with `aggregate()`.
+
+```{r}
+airquality %>% group_by(Month) %>% summarize(avgTemp = mean(Temp))
+aggregate(Temp ~ Month, data = airquality, mean)
+```
+
+> ANSWER: Month 8 (August) is the hottest at about 84.0, just above July at 83.9.
+
+11. Add a column `hot` that says "hot" when `Temp` is over 80 and "mild" otherwise. Count each label with `table()`.
+
+```{r}
+air <- airquality %>% mutate(hot = ifelse(Temp > 80, "hot", "mild"))
+table(air$hot)
+```
+
+12. Using `iris`, keep only the `setosa` flowers, keep only the two `Petal` columns, and sort by `Petal.Length` from longest to shortest.
+
+```{r}
+iris %>%
+  filter(Species == "setosa") %>%
+  select(Petal.Length, Petal.Width) %>%
+  arrange(desc(Petal.Length)) %>%
+  head()
+```
+
+13. What is the difference between `group_by()` followed by `summarize()` and `group_by()` followed by `mutate()`? Try both on `iris` with the mean `Sepal.Length` by `Species`.
+
+```{r}
+iris %>% group_by(Species) %>% summarize(avg = mean(Sepal.Length))
+iris %>% group_by(Species) %>% mutate(avg = mean(Sepal.Length)) %>% nrow()
+```
+
+> ANSWER: `summarize()` gives one row per group, so 3 rows. `mutate()` keeps all 150 rows and adds the group mean to each one.
+
+---
+
+## Part 4: Functions (Week 3)
+
+14. Write a function called `printVecInfo` that takes a vector and prints its mean, median, min, max, standard deviation, and the 0.05 and 0.95 quantiles. Test it on `mtcars$mpg`.
+
+```{r}
+printVecInfo <- function(v) {
+  cat("mean:", mean(v), "\n")
+  cat("median:", median(v), "\n")
+  cat("min:", min(v), "max:", max(v), "\n")
+  cat("sd:", sd(v), "\n")
+  cat("quantile (0.05 - 0.95):", quantile(v, c(0.05, 0.95)), "\n")
+}
+printVecInfo(mtcars$mpg)
+```
+
+15. Write a function `countAbove(df, colName, cutoff)` that returns how many rows of `df` have a value above `cutoff` in the column called `colName`. Test it with `countAbove(mtcars, "hp", 200)`.
+
+```{r}
+countAbove <- function(df, colName, cutoff) {
+  return(sum(df[[colName]] > cutoff))
+}
+countAbove(mtcars, "hp", 200)
+```
+
+> ANSWER: 7 cars have more than 200 hp.
+
+---
+
+## Part 5: Sampling, the LLN and the CLT (Weeks 4-5)
+
+16. Flip a fair coin 10 times with `rbinom(10, 1, 0.5)` and find the mean. Do the same with 100,000 flips. Which law explains the difference?
+
+```{r}
+set.seed(1)
+mean(rbinom(10, 1, 0.5))
+mean(rbinom(100000, 1, 0.5))
+```
+
+> ANSWER: The Law of Large Numbers. With more flips, the mean of one big sample gets closer to the true value of 0.5.
+
+17. Use `replicate()` to take 1,000 samples of 10 values from `mtcars$mpg` (with replacement) and save the 1,000 sample means. Make a histogram of the sample means and compare their mean with the population mean.
+
+```{r}
+set.seed(2)
+sampleMeans <- replicate(1000, mean(sample(mtcars$mpg, size = 10, replace = TRUE)))
+hist(sampleMeans)
+mean(sampleMeans)
+mean(mtcars$mpg)
+```
+
+> ANSWER: The histogram is roughly bell-shaped, even though `mpg` itself is skewed, and it is centered near the population mean of about 20.1. That is the Central Limit Theorem: it is about the shape of the distribution of many sample means.
+
+18. Find the 2.5% and 97.5% quantiles of `sampleMeans`. A mystery sample of 10 cars has a mean mpg of 25. Does it look like it came from `mtcars`?
+
+```{r}
+quantile(sampleMeans, c(0.025, 0.975))
+```
+
+> ANSWER: 25 is above the 97.5% cutoff (about 23.9), so it is unusual. It probably did not come from the same population.
+
+---
+
+## Part 6: Importing data (Week 6)
+
+19. Write `mtcars` to a CSV file with `write_csv()`, then read it back in with `read_csv()`. What happened to the car names?
+
+```{r}
+write_csv(mtcars, "cars.csv")
+carsBack <- read_csv("cars.csv")
+head(carsBack, 3)
+```
+
+> ANSWER: The car names are lost, because they were row names, not a column. Tibbles do not keep row names.
+
+20. Turn the first three rows of `mtcars` into JSON with `jsonlite::toJSON()`, then turn it back with `fromJSON()`. What kind of object comes back?
+
+```{r}
+library(jsonlite)
+myJson <- toJSON(mtcars[1:3, 1:4])
+myJson
+back <- fromJSON(myJson)
+class(back)
+```
+
+> ANSWER: A data frame. JSON is like a PHP array, and `fromJSON()` turns it into a data frame or a list.
+
+---
+
+## Part 7: ggplot2 (Weeks 6-7)
+
+21. Make a histogram of `Temp` from `airquality`.
+
+```{r}
+ggplot(airquality, aes(x = Temp)) + geom_histogram(bins = 15, color = "white")
+```
+
+22. Make a scatter plot of `wt` (x) against `mpg` (y) from `mtcars`, colored by `cyl`, with a straight trend line.
+
+```{r}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point(aes(color = factor(cyl))) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+> ANSWER: Heavier cars get fewer miles per gallon. `cyl` needs `factor()`, or ggplot treats it as a number and uses a color gradient.
+
+23. Make a box plot of `mpg` for each number of cylinders. Then make a bar chart of how many cars have each number of cylinders.
+
+```{r}
+ggplot(mtcars, aes(x = factor(cyl), y = mpg)) + geom_boxplot()
+ggplot(mtcars, aes(x = factor(cyl))) + geom_bar()
+```
+
+24. Make a line chart of `unemploy` over `date` from `economics`, with a title.
+
+```{r}
+ggplot(economics, aes(x = date, y = unemploy)) +
+  geom_line() +
+  ggtitle("US unemployment over time")
+```
+
+---
+
+## Part 8: Maps (Week 7)
+
+25. Turn `state.x77` into a data frame, add a `state` column with lowercase state names, and merge it with `map_data("state")`. Then draw a map of the states filled by `Income`.
+
+```{r}
+library(maps); library(mapproj)
+states <- data.frame(state.x77)
+states$state <- tolower(state.name)
+us <- map_data("state")
+mapDF <- merge(us, states, by.x = "region", by.y = "state")
+mapDF <- mapDF %>% arrange(order)
+ggplot(mapDF, aes(x = long, y = lat, group = group, fill = Income)) +
+  geom_polygon(color = "white") +
+  coord_map()
+```
+
+> ANSWER: `tolower()` is needed because `map_data()` uses lowercase names. `group = group` stops lines from joining different states, and `arrange(order)` puts the points back in drawing order after `merge()`.
+
+---
+
+## Part 9: Linear regression (Week 8)
+
+26. Fit a model that predicts `mpg` from `wt` and `hp`. Look at the summary. Which predictors are significant, and what is the R-squared?
+
+```{r}
+model1 <- lm(mpg ~ wt + hp, data = mtcars)
+summary(model1)
+```
+
+> ANSWER: Both `wt` and `hp` are significant (p < 0.05), and the adjusted R-squared is about 0.81. Each extra 1,000 lb lowers mpg by about 3.9, with hp held the same.
+
+27. Use the model to predict the mpg of a car with `wt = 3` and `hp = 150`.
+
+```{r}
+predict(model1, newdata = data.frame(wt = 3, hp = 150))
+```
+
+> ANSWER: About 20.8 mpg. `predict()` needs a data frame in `newdata`.
+
+---
+
+## Part 10: Trees and SVMs (Week 9)
+
+28. Load `GermanCredit` from `{caret}` and keep the first 10 columns. Split it into 70% training and 30% testing data with `createDataPartition()`.
+
+```{r}
+library(caret)
+data("GermanCredit")
+subCredit <- GermanCredit[, 1:10]
+set.seed(387)
+trainList <- createDataPartition(y = subCredit$Class, p = 0.70, list = FALSE)
+trainSet <- subCredit[trainList, ]
+testSet <- subCredit[-trainList, ]
+dim(trainSet); dim(testSet)
+```
+
+29. Train a tree with `rpart()` to predict `Class`, plot it with `prp()`, and test it with `confusionMatrix()`. Is the accuracy better than the No Information Rate?
+
+```{r}
+library(rpart); library(rpart.plot)
+treeModel <- rpart(Class ~ ., data = trainSet, method = "class")
+prp(treeModel, faclen = 0, cex = 0.8, extra = 1)
+treePred <- predict(treeModel, newdata = testSet, type = "class")
+confusionMatrix(treePred, testSet$Class)
+```
+
+> ANSWER: The accuracy is about 0.687, which is lower than the No Information Rate of 0.7 (70% of customers are "Good"). The P-Value [Acc > NIR] is 0.72, far above 0.05, so the tree is no better than always guessing "Good".
+
+30. Train an SVM with `ksvm()` on the same training data, with `C = 5` and 3-fold cross validation. Test it with `confusionMatrix()`. Which model did better?
+
+```{r}
+library(kernlab)
+svmModel <- ksvm(Class ~ ., data = trainSet, C = 5, cross = 3, prob.model = TRUE)
+svmModel
+svmPred <- predict(svmModel, newdata = testSet)
+confusionMatrix(svmPred, testSet$Class)
+```
+
+> ANSWER: The SVM did slightly better, with an accuracy of about 0.703 against 0.687 for the tree. But its P-Value [Acc > NIR] is 0.48, so it is still not really better than the NIR of 0.7. This is a common exam point: an accuracy of 70% can be no better than always guessing the most common class.

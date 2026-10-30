@@ -1,0 +1,1496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IST 387 R Guide v2</title>
+<meta name="author" content="Naim Bin Hasan">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one readable column of study cards, a sticky jump bar, and an R-console code style. SQL/Laravel analogies are amber; R is blue. */
+:root{
+  --bg:#F4F6F9; --surface:#FFFFFF; --ink:#17202B; --muted:#596577; --line:#DCE2EA;
+  --accent:#1F5FBF; --accent-soft:#E7EEFA; --sql:#A85A12; --sql-soft:#FBF1E5;
+  --ok:#2C7A4B; --ok-soft:#E5F4EB; --code-bg:#EEF2F7;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#161D27; --ink:#E7EBF1; --muted:#9BA7B6; --line:#263142;
+  --accent:#7EA9F2; --accent-soft:#1A2A45; --sql:#E3A35F; --sql-soft:#2D2318;
+  --ok:#67C48E; --ok-soft:#173025; --code-bg:#1C2532; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#161D27; --ink:#E7EBF1; --muted:#9BA7B6; --line:#263142;
+  --accent:#7EA9F2; --accent-soft:#1A2A45; --sql:#E3A35F; --sql-soft:#2D2318;
+  --ok:#67C48E; --ok-soft:#173025; --code-bg:#1C2532; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto;padding-block:28px 64px;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:800;letter-spacing:-0.02em}
+h2{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-0.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0} ul,ol{margin:0;padding-left:1.2em}
+a{color:var(--accent)}
+code{font-family:var(--f-mono);font-size:0.9em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--f-mono);font-size:0.86rem;line-height:1.55;background:var(--code-bg);border:1px solid var(--line);
+  border-radius:8px;padding:12px 14px;margin:0;overflow-x:auto;white-space:pre}
+pre .c{color:var(--muted)} pre .o{color:var(--ok)}
+.eyebrow{font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent)}
+.byline{font-size:0.92rem;font-weight:600;margin:0}
+.lede{color:var(--muted);max-width:62ch}
+
+/* header */
+header{display:flex;flex-direction:column;gap:14px}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.fact{font-size:0.85rem;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px}
+.fact b{color:var(--accent)}
+
+/* jump bar */
+nav.jump{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));padding:10px max(16px, env(safe-area-inset-left, 0px))}
+nav.jump .row{max-width:820px;margin:0 auto;display:flex;gap:6px;overflow-x:auto}
+nav.jump a{flex:none;text-decoration:none;color:var(--ink);font-size:0.88rem;font-weight:500;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+nav.jump a:hover,nav.jump a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:70px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.sql{border-left:3px solid var(--sql);background:var(--sql-soft);border-radius:6px;padding:8px 12px;font-size:0.92rem}
+.sql b{color:var(--sql)}
+.pill{display:inline-block;font-size:0.72rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.warn{font-size:0.92rem;color:var(--muted)}
+.warn b{color:var(--ink)}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:0.9rem}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:0.75rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td:first-child code{color:var(--sql);background:var(--sql-soft)}
+td:nth-child(2) code{color:var(--accent);background:var(--accent-soft)}
+
+/* plan */
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.day .d{font-family:var(--f-mono);font-size:0.78rem;color:var(--muted)}
+.day.exam{border-color:var(--accent);background:var(--accent-soft)}
+
+/* quizzes */
+.quiz{display:flex;flex-direction:column;gap:12px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.q .num{font-family:var(--f-mono);font-size:0.78rem;color:var(--muted)}
+details{border-top:1px dashed var(--line);padding-top:8px}
+summary{cursor:pointer;font-weight:600;color:var(--accent);font-size:0.9rem;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸ ";} details[open] summary::before{content:"▾ ";}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.ans{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.got{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--muted);cursor:pointer;width:fit-content}
+.got input{width:18px;height:18px;accent-color:var(--ok)}
+.score{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom, 0px));align-self:flex-end;background:var(--surface);border:1px solid var(--line);
+  border-radius:999px;padding:6px 14px;font-weight:600;font-variant-numeric:tabular-nums;box-shadow:0 4px 14px rgba(0,0,0,0.08)}
+.score span{color:var(--ok)}
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.cheat .card{gap:6px}
+.cheat code{display:inline-block;margin:1px 0}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+.terms{display:flex;flex-wrap:wrap;gap:6px}
+.term{font-size:0.84rem;background:var(--accent-soft);border-radius:6px;padding:3px 9px}
+.term b{color:var(--accent)}
+.week{display:flex;flex-direction:column;gap:16px;scroll-margin-top:70px}
+.wk{display:flex;flex-direction:column;gap:6px;border-top:2px solid var(--ink);padding-top:14px}
+.wk .n{font-family:var(--f-mono);font-size:0.8rem;color:var(--muted)}
+.band{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.two pre{font-size:0.82rem}
+.new{border:1px dashed var(--accent);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--accent-soft)}
+.newh{font-family:var(--f-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);font-weight:600}
+.new dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.new dl div{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;gap:12px;align-items:baseline}
+.new dt{font-family:var(--f-mono);font-size:0.84rem;font-weight:600;white-space:nowrap}
+.new dd{margin:0;min-width:0;font-size:0.94rem}
+@media (max-width:560px){.new dl div{grid-template-columns:1fr;gap:0}}
+.pk{display:inline-block;font-family:var(--f-mono);font-size:0.7rem;font-weight:600;line-height:1.3;padding:1px 6px;border-radius:4px;margin:4px 4px 0 0;border:1px solid currentColor;white-space:nowrap}
+.pk.b{color:var(--ok);background:var(--ok-soft)}
+.pk.t{color:var(--accent);background:var(--accent-soft)}
+.pk.o{color:var(--sql);background:var(--sql-soft)}
+.pkrow{display:block}
+.ab{display:block;font-size:0.78rem;color:var(--muted);margin-top:4px;line-height:1.4}
+.ab b{color:var(--accent);font-weight:600}
+.lbl{font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted)}
+nav.jump .sep{flex:none;width:1px;background:var(--line);margin:4px 2px}
+</style>
+
+<nav class="jump" aria-label="Jump to section"><div class="row">
+  <a href="#plan">Plan</a><a href="#translate">R for Laravel devs</a><span class="sep"></span>
+  <a href="#w1">W1</a><a href="#w2">W2</a><a href="#w3">W3</a><a href="#w4">W4</a><a href="#w5">W5</a>
+  <a href="#w6">W6</a><a href="#w7">W7</a><a href="#w8">W8</a><a href="#w9">W9</a><a href="#w10">W10</a><span class="sep"></span>
+  <a href="#byhand">Write by hand</a><a href="#mock">Mock exam</a><a href="#cheat">Cheat sheet</a>
+</div></nav>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">IST 387 · Intro to Data Science · Version 2</span>
+  <h1>R study guide for the midterm</h1>
+  <p class="byline">By Naim Bin Hasan</p>
+  <p class="lede">Updated from the official exam study guide: the exam covers <b>Weeks 1 to 9</b>. Every week is here, one at a time, explained for someone who already knows MySQL and Laravel. Each week has the key terms, the code from the lectures and labs, the traps the exam likes, and a short quiz. The 25-question mock exam at the end works like the real one.</p>
+  <div class="facts">
+    <span class="fact">Exam: <b>Thu, Nov 5</b>, in lecture</span>
+    <span class="fact"><b>80 min</b>, paper, closed book</span>
+    <span class="fact">No notes, no computer</span>
+    <span class="fact">Worth <b>25%</b></span>
+    <span class="fact">Covers <b>Weeks 1–9</b></span>
+    <span class="fact">Multiple choice + short answer</span>
+  </div>
+</header>
+
+<section id="plan">
+  <span class="eyebrow">Start here</span>
+  <h2>6-session plan</h2>
+  <p class="lede">The study guide asks for spaced practice, not cramming: six sessions, one a day, with sleep in between. Each session is at least one uninterrupted hour, with your phone away. The most important topics come first and are repeated on later days.</p>
+  <div class="plan">
+    <div class="day"><span class="d">Session 1 · Fri, Oct 30</span><b>Translation table + Weeks 1–2</b><span class="warn">Vectors, lists, data frames, indexing, logical subsetting. Do both quizzes.</span></div>
+    <div class="day"><span class="d">Session 2 · Sat, Oct 31</span><b>Weeks 3–4</b><span class="warn">Tidyverse verbs, functions, descriptive stats, sampling. Redo the Week 2 quiz first (10 min).</span></div>
+    <div class="day"><span class="d">Session 3 · Sun, Nov 1</span><b>Weeks 5–7</b><span class="warn">LLN vs CLT, histograms, importing data, ggplot, maps. Then the first half of “Write it by hand”.</span></div>
+    <div class="day"><span class="d">Session 4 · Mon, Nov 2</span><b>Weeks 8–9</b><span class="warn">lm, trees, SVMs, train/test split, confusion matrix. Then the second half of “Write it by hand”.</span></div>
+    <div class="day"><span class="d">Session 5 · Tue, Nov 3</span><b>Mock exam, timed (80 min)</b><span class="warn">On paper, closed book. Mark it, then redo every miss from scratch.</span></div>
+    <div class="day"><span class="d">Session 6 · Wed, Nov 4</span><b>Weak spots + cheat sheet</b><span class="warn">Reread only the weeks you missed, redo one homework from scratch, then “The ten traps”. Sleep.</span></div>
+    <div class="day exam"><span class="d">Exam · Thu, Nov 5</span><b>In lecture, on paper</b><span class="warn">Bring a pen or pencil. Nothing else is allowed.</span></div>
+  </div>
+  <p class="warn">The guide also says to write 5 to 7 key points per chapter <b>on paper</b>. Do that at the end of each session: it is the closest thing to the real exam.</p>
+</section>
+
+<section id="translate">
+  <span class="eyebrow">Your shortcut</span>
+  <h2>R for Laravel and MySQL developers</h2>
+  <p class="lede">A data frame is just a table, and the tidyverse is a query builder. Most of R maps onto things you already use every day.</p>
+  <div class="card">
+    <h3>Which functions need which package?</h3>
+    <p>Every function in the tables below has a tag. <span class="pk b">base R</span> works straight away. <span class="pk t">dplyr</span> and the other blue tags need <code>library(tidyverse)</code> first. <span class="pk o">rpart</span> and the other orange tags need their own <code>library()</code> call.</p>
+    <p>Many names below are new; this card only says where each one comes from. Every function is explained in plain words in the week where it is first taught, in a box labeled “New in this code”.</p>
+    <p class="warn">If you skip the <code>library()</code> line, R says <code>could not find function "glimpse"</code>. The same error comes from a typo or wrong capitals, like <code>Mean()</code>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Load with</th><th>What it gives you</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pk b">nothing</span></td><td>Base R: <code>c</code>, <code>mean</code>, <code>sd</code>, <code>str</code>, <code>head</code>, <code>nrow</code>, <code>order</code>, <code>is.na</code>, <code>ifelse</code>, <code>paste0</code>, <code>gsub</code>, <code>table</code>, <code>merge</code>, <code>aggregate</code>, <code>sample</code>, <code>replicate</code>, <code>rbinom</code>, <code>hist</code>, <code>lm</code>, <code>predict</code>, <code>quantile</code></td></tr>
+        <tr><td><code>library(tidyverse)</code></td><td>Loads 9 packages at once: <span class="pk t">dplyr</span> (<code>filter</code>, <code>select</code>, <code>mutate</code>, <code>arrange</code>, <code>group_by</code>, <code>summarize</code>, <code>glimpse</code>, <code>left_join</code>), <span class="pk t">ggplot2</span> (<code>ggplot</code>, <code>aes</code>, <code>geom_*</code>, <code>map_data</code>), <span class="pk t">readr</span> (<code>read_csv</code>), <span class="pk t">stringr</span> (<code>str_replace</code>), <span class="pk t">tibble</span>, <span class="pk t">tidyr</span>, <span class="pk t">purrr</span>, <span class="pk t">forcats</span> and <span class="pk t">lubridate</span>. The pipe <code>%&gt;%</code> comes with it.</td></tr>
+        <tr><td><code>library(readxl)</code></td><td><span class="pk o">readxl</span> <code>read_excel</code>. It installs with the tidyverse but is <b>not</b> loaded by <code>library(tidyverse)</code>.</td></tr>
+        <tr><td><code>library(jsonlite)</code></td><td><span class="pk o">jsonlite</span> <code>fromJSON</code>, <code>toJSON</code>. This is also not loaded by <code>library(tidyverse)</code>.</td></tr>
+        <tr><td><code>library(RCurl)</code></td><td><span class="pk o">RCurl</span> <code>getURL</code></td></tr>
+        <tr><td><code>library(maps)</code>, <code>library(mapproj)</code></td><td><span class="pk o">maps</span> holds the map data behind <code>map_data()</code>. <span class="pk o">mapproj</span> is needed for <code>coord_map()</code>.</td></tr>
+        <tr><td><code>library(rpart)</code>, <code>library(rpart.plot)</code></td><td><span class="pk o">rpart</span> <code>rpart</code> builds trees. <span class="pk o">rpart.plot</span> <code>prp</code> draws them.</td></tr>
+        <tr><td><code>library(caret)</code></td><td><span class="pk o">caret</span> <code>createDataPartition</code>, <code>confusionMatrix</code>, <code>train</code>, and the <code>GermanCredit</code> data</td></tr>
+        <tr><td><code>library(kernlab)</code></td><td><span class="pk o">kernlab</span> <code>ksvm</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>You know (SQL / PHP / Laravel)</th><th>In R</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>A table</td><td><code>data.frame</code> / tibble<span class="pkrow"><span class="pk b">data.frame: base R</span><span class="pk t">tibble: tidyverse</span></span><span class="ab">tibble = the tidyverse’s “tbl” (table), said out loud</span></td><td>Rows are records, columns are fields.</td></tr>
+      <tr><td><code>DESCRIBE users;</code></td><td><code>str(df)</code> / <code>glimpse(df)</code><span class="pkrow"><span class="pk b">str: base R</span><span class="pk t">glimpse: dplyr</span></span><span class="ab"><b>str</b> = structure · <b>df</b> = data frame (just a common variable name)</span></td><td>Column names, types and a preview.</td></tr>
+      <tr><td><code>SELECT * … LIMIT 6</code></td><td><code>head(df)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab">head = top of the table · tail = bottom</span></td><td><code>tail(df)</code> shows the last 6.</td></tr>
+      <tr><td><code>SELECT COUNT(*)</code></td><td><code>nrow(df)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>nrow</b> = number of rows · <b>ncol</b> = number of columns · <b>dim</b> = dimensions</span></td><td><code>dim(df)</code> gives rows and columns.</td></tr>
+      <tr><td><code>SELECT name, age</code></td><td><code>select(df, name, age)</code><span class="pkrow"><span class="pk t">dplyr</span></span></td><td>Pick columns.</td></tr>
+      <tr><td><code>WHERE age &gt; 30</code></td><td><code>filter(df, age &gt; 30)</code><span class="pkrow"><span class="pk t">dplyr</span></span></td><td>Pick rows.</td></tr>
+      <tr><td><code>WHERE x IS NULL</code></td><td><code>df[is.na(df$x), ]</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>NA</b> = Not Available · <b>is.na</b> = “is it NA?”</span></td><td><code>!is.na()</code> is <code>IS NOT NULL</code>.</td></tr>
+      <tr><td><code>ORDER BY age DESC</code></td><td><code>arrange(df, desc(age))</code><span class="pkrow"><span class="pk t">dplyr</span></span><span class="ab"><b>desc</b> = descending</span></td><td>Sort.</td></tr>
+      <tr><td><code>LIMIT 3</code> / <code>OFFSET</code></td><td><code>slice(df, 1:3)</code><span class="pkrow"><span class="pk t">dplyr</span></span></td><td>Rows by position.</td></tr>
+      <tr><td><code>GROUP BY type</code> + <code>AVG()</code></td><td><code>group_by(type) %&gt;% summarize(m = mean(x))</code><span class="pkrow"><span class="pk t">dplyr</span></span><span class="ab"><b>summarize</b> = summarise (both spellings work)</span></td><td>One row per group.</td></tr>
+      <tr><td><code>SUM(n) … GROUP BY day</code></td><td><code>aggregate(n ~ day, data = df, sum)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>~</b> = “by” or “explained by”: n by day</span></td><td>The base R version.</td></tr>
+      <tr><td>A computed column</td><td><code>mutate(df, bmi = w / h^2)</code><span class="pkrow"><span class="pk t">dplyr</span></span></td><td>Adds or changes a column.</td></tr>
+      <tr><td><code>CASE WHEN … THEN … ELSE</code></td><td><code>ifelse(test, yes, no)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>ifelse</b> = if … else, in one call</span></td><td>Works on a whole column at once.</td></tr>
+      <tr><td><code>CONCAT(city, ', ', state)</code></td><td><code>paste0(city, ", ", state)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>paste0</b> = paste with 0 (no) separator</span></td><td><code>paste()</code> adds a space between parts.</td></tr>
+      <tr><td><code>REPLACE(col, 'a', 'b')</code></td><td><code>gsub("a", "b", col)</code><span class="pkrow"><span class="pk b">gsub: base R</span><span class="pk t">str_replace: stringr</span></span><span class="ab"><b>gsub</b> = global substitute · <b>sub</b> = substitute the first match only</span></td><td>Replaces every match.</td></tr>
+      <tr><td><code>LOWER(name)</code></td><td><code>tolower(name)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>tolower</b> = to lower case · <b>toupper</b> = to upper case</span></td><td>Needed to match map region names.</td></tr>
+      <tr><td><code>SELECT x, COUNT(*) GROUP BY x</code></td><td><code>table(df$x)</code><span class="pkrow"><span class="pk b">base R</span></span></td><td>Frequency counts.</td></tr>
+      <tr><td><code>JOIN … ON a.id = b.id</code></td><td><code>merge(a, b, by = "id")</code><span class="pkrow"><span class="pk b">merge: base R</span><span class="pk t">left_join: dplyr</span></span></td><td><code>all.x = TRUE</code> or <code>left_join()</code> makes it a LEFT JOIN.</td></tr>
+      <tr><td><code>CAST(x AS DECIMAL)</code></td><td><code>as.numeric(x)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>as.</b> = convert to (as.character, as.factor, as.Date)</span></td><td>Text that isn't a number becomes <code>NA</code>.</td></tr>
+      <tr><td><code>$user-&gt;email</code></td><td><code>df$email</code><span class="pkrow"><span class="pk b">base R</span></span></td><td><code>$</code> is R's <code>-&gt;</code>.</td></tr>
+      <tr><td><code>User::where()-&gt;orderBy()-&gt;get()</code></td><td><code>df %&gt;% filter() %&gt;% arrange()</code><span class="pkrow"><span class="pk t">%&gt;%: tidyverse</span><span class="pk b">|&gt;: base R</span></span><span class="ab"><b>%&gt;%</b> = read it as “then”</span></td><td>The pipe <code>%&gt;%</code> (or <code>|&gt;</code>) chains steps.</td></tr>
+      <tr><td><code>$arr = [4, 8, 15];</code></td><td><code>x &lt;- c(4, 8, 15)</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>c</b> = combine · <b>&lt;-</b> = “gets”</span></td><td><code>&lt;-</code> assigns. <b>R counts from 1</b>, not 0.</td></tr>
+      <tr><td><code>NULL</code></td><td><code>NA</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab"><b>NA</b> = Not Available</span></td><td>A missing value.</td></tr>
+      <tr><td><code>ENUM('low','high')</code></td><td><code>factor()</code><span class="pkrow"><span class="pk b">base R</span></span></td><td>A category with fixed levels.</td></tr>
+      <tr><td><code>json_decode()</code></td><td><code>fromJSON()</code><span class="pkrow"><span class="pk o">jsonlite</span></span><span class="ab"><b>JSON</b> = JavaScript Object Notation</span></td><td>Turns JSON into lists or a data frame.</td></tr>
+      <tr><td><code>function add($a,$b){ return $a+$b; }</code></td><td><code>add &lt;- function(a, b) { a + b }</code><span class="pkrow"><span class="pk b">base R</span></span></td><td>The last line is returned automatically.</td></tr>
+      <tr><td><code>composer require</code> / <code>use</code></td><td><code>install.packages()</code> / <code>library()</code><span class="pkrow"><span class="pk b">base R</span></span><span class="ab">a package is like a Composer package; library loads it</span></td><td>Install once, load every session.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="card">
+    <h3>Other short names in the course</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Short name</th><th>Stands for</th><th>Package</th><th>Week</th></tr></thead>
+      <tbody>
+        <tr><td><code>sd()</code></td><td>standard deviation</td><td><span class="pk b">base R</span></td><td>3</td></tr>
+        <tr><td><code>var()</code></td><td>variance</td><td><span class="pk b">base R</span></td><td>3</td></tr>
+        <tr><td><code>IQR()</code></td><td>interquartile range (Q3 − Q1)</td><td><span class="pk b">base R</span></td><td>3</td></tr>
+        <tr><td><code>seq()</code></td><td>sequence</td><td><span class="pk b">base R</span></td><td>1</td></tr>
+        <tr><td><code>rep()</code></td><td>repeat</td><td><span class="pk b">base R</span></td><td>1</td></tr>
+        <tr><td><code>cat()</code></td><td>concatenate and print</td><td><span class="pk b">base R</span></td><td>3</td></tr>
+        <tr><td><code>which.max()</code></td><td>which position has the max</td><td><span class="pk b">base R</span></td><td>3</td></tr>
+        <tr><td><code>rbinom()</code></td><td>random binomial (coin flips)</td><td><span class="pk b">base R</span></td><td>4</td></tr>
+        <tr><td><code>rnorm()</code> / <code>runif()</code></td><td>random normal / random uniform</td><td><span class="pk b">base R</span></td><td>4</td></tr>
+        <tr><td>LLN / CLT</td><td>Law of Large Numbers / Central Limit Theorem</td><td>—</td><td>4–5</td></tr>
+        <tr><td><code>read_csv()</code> / CSV</td><td>comma-separated values</td><td><span class="pk t">readr</span></td><td>6</td></tr>
+        <tr><td><code>getURL()</code> / URL</td><td>uniform resource locator (a web address)</td><td><span class="pk o">RCurl</span></td><td>6</td></tr>
+        <tr><td><code>gg</code> in ggplot</td><td>grammar of graphics</td><td><span class="pk t">ggplot2</span></td><td>6</td></tr>
+        <tr><td><code>aes()</code></td><td>aesthetics (which columns go on x, y, color)</td><td><span class="pk t">ggplot2</span></td><td>6</td></tr>
+        <tr><td><code>geom_</code></td><td>geometric object (point, line, bar …)</td><td><span class="pk t">ggplot2</span></td><td>6</td></tr>
+        <tr><td><code>coord_map()</code></td><td>coordinate system for maps</td><td><span class="pk t">ggplot2</span><span class="pk o">mapproj</span></td><td>7</td></tr>
+        <tr><td><code>long</code> / <code>lat</code></td><td>longitude / latitude</td><td><span class="pk t">ggplot2</span><span class="pk o">maps</span></td><td>7</td></tr>
+        <tr><td><code>lm()</code></td><td>linear model</td><td><span class="pk b">base R</span></td><td>8</td></tr>
+        <tr><td><code>rpart()</code></td><td>recursive partitioning (a decision tree)</td><td><span class="pk o">rpart</span></td><td>9</td></tr>
+        <tr><td>CART</td><td>Classification And Regression Trees</td><td>—</td><td>9</td></tr>
+        <tr><td><code>prp()</code></td><td>plot an rpart model</td><td><span class="pk o">rpart.plot</span></td><td>9</td></tr>
+        <tr><td><code>cp</code></td><td>complexity parameter (how much a split must help)</td><td><span class="pk o">rpart</span></td><td>9</td></tr>
+        <tr><td><code>ksvm()</code> / SVM</td><td>kernel support vector machine</td><td><span class="pk o">kernlab</span></td><td>9</td></tr>
+        <tr><td><code>C</code> in ksvm</td><td>cost of a wrong classification</td><td><span class="pk o">kernlab</span></td><td>9</td></tr>
+        <tr><td><code>cross</code> / CV</td><td>cross validation (number of folds)</td><td><span class="pk o">kernlab</span></td><td>9</td></tr>
+        <tr><td><code>caret</code></td><td>Classification And REgression Training</td><td><span class="pk o">caret</span></td><td>9</td></tr>
+        <tr><td>NIR</td><td>No Information Rate (always guess the most common class)</td><td><span class="pk o">caret</span></td><td>9</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<div class="band">
+  <span class="eyebrow">Part 1 · Weeks 1–3</span>
+  <h2>R basics, data frames, functions and descriptive statistics</h2>
+</div>
+
+<!-- WEEK 1 -->
+<section class="week" id="w1">
+  <div class="wk"><span class="n">Week 1</span><h2>What data science is, and your first R</h2></div>
+  <div class="terms">
+    <span class="term"><b>Data science:</b> math + stats + coding + domain knowledge → actionable insights</span>
+    <span class="term"><b>Structured:</b> rows and columns (SQL, CSV)</span>
+    <span class="term"><b>Unstructured:</b> text, images, audio (there's far more of it)</span>
+    <span class="term"><b>OSEMN</b> and <b>CRISP-DM:</b> process models; both iterative</span>
+    <span class="term"><b>SME:</b> subject matter expert</span>
+  </div>
+
+  <div class="card">
+    <h3>The ideas the exam can ask about</h3>
+    <ul>
+      <li>The <b>core goal</b> of data science is creating useful, <b>actionable insights</b> that guide decisions, often through machine learning predictions.</li>
+      <li>It is <b>multidisciplinary</b>: databases, statistics, computer science and non-technical skills. Above all, data science is about <b>communicating</b>.</li>
+      <li><b>OSEMN:</b> Obtain, Scrub, Explore, Model, iNterpret. It loops; you keep going round. <b>CRISP-DM</b> (Cross-Industry Standard Process for Data Mining) is another process model, and it starts with understanding the business.</li>
+      <li>A project starts with <b>understanding the domain</b>: find the SMEs and get them to tell stories about what they do. <b>Anomalies</b> show you either an error in the system or an interesting exception.</li>
+      <li>Real-world uses: outbreak, climate, health (predicting high-risk patients), sports and business analytics (fraud, customer purchases, inventory).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Atomic types (modes)</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Type</th><th>Example</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Logical</td><td><code>TRUE</code>, <code>FALSE</code></td><td>TRUE counts as 1, FALSE as 0.</td></tr>
+        <tr><td>Integer</td><td><code>1L</code></td><td>No decimal part. The <code>L</code> makes it an integer.</td></tr>
+        <tr><td>Double</td><td><code>1</code>, <code>2.5</code></td><td>Plain numbers are doubles. <code>mode()</code> calls both "numeric".</td></tr>
+        <tr><td>Character</td><td><code>"1"</code></td><td>Text, always in quotes.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="warn"><b>Coercion rule:</b> a vector holds one type, so R converts upwards: logical → numeric → character. <code>c(1, TRUE)</code> is <code>1 1</code> (numeric), and <code>c(3, "a", TRUE)</code> is all text.</p>
+  </div>
+
+  <div class="card">
+    <h3>Vectors: R's arrays</h3>
+<pre>myNumbers &lt;- 1:10            <span class="c"># 1 2 3 ... 10   (the colon makes a sequence)</span>
+sum(myNumbers)               <span class="c"># 55</span>
+myNumbers + 10               <span class="c"># 11 12 ... 20   (vector math: no loop needed)</span>
+x &lt;- c(2, 7, 4, 9)           <span class="c"># c() = combine</span>
+x[2]                         <span class="c"># 7</span>
+x[-1]                        <span class="c"># 7 4 9   (minus drops element 1)</span>
+x &gt; 5                        <span class="c"># FALSE TRUE FALSE TRUE   (a logical vector)</span>
+x[x &gt; 5]                     <span class="c"># 7 9     (keep only the TRUE positions)</span>
+sum(x &gt; 5)                   <span class="c"># 2       (counts the TRUEs)</span>
+length(x); mean(x); range(x) <span class="c"># 4, 5.5, 2 9</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>myNumbers &lt;- …</dt><dd><code>&lt;-</code> stores a value in a name, like <code>$myNumbers = …</code> in PHP. Read it as “gets”.</dd></div><div><dt>1:10</dt><dd>The colon makes a sequence of whole numbers from 1 to 10.</dd></div><div><dt>sum()</dt><dd>Adds up all the values.</dd></div><div><dt>x[2]</dt><dd>Square brackets pick elements by position. R starts counting at 1, so <code>x[2]</code> is the second value.</dd></div><div><dt>x &gt; 5</dt><dd>A comparison done on every element at once. It returns TRUE or FALSE for each one (a logical vector).</dd></div><div><dt>length()</dt><dd>How many elements the vector has.</dd></div><div><dt>mean()</dt><dd>The average: the sum divided by the number of values.</dd></div><div><dt>range()</dt><dd>Returns two numbers: the smallest and the biggest.</dd></div><div><dt>;</dt><dd>Lets you put two commands on one line. A new line does the same thing.</dd></div><div><dt>print()</dt><dd>Shows a value on screen. Inside an <code>if</code> you need it; at the top level R prints automatically.</dd></div><div><dt>if (test) a else b</dt><dd>Runs <code>a</code> when the single TRUE/FALSE test is TRUE, otherwise <code>b</code>.</dd></div></dl></div>
+    <div class="sql"><b>SQL brain:</b> <code>x[x &gt; 5]</code> is <code>SELECT x WHERE x &gt; 5</code>, and <code>sum(x &gt; 5)</code> is <code>COUNT(*) WHERE x &gt; 5</code>.</div>
+    <ul>
+      <li><b>Capitalization matters:</b> <code>Mean(x)</code> is an error ("could not find function"). So is a made-up function like <code>fish()</code>.</li>
+      <li>A vector has a <b>length</b> (number of elements) and a <b>mode</b> (type).</li>
+      <li><code>?mean</code> or <code>help(mean)</code> opens the help page.</li>
+      <li>Missing values spread: <code>mean(c(1, NA, 3))</code> is <code>NA</code>. Add <code>na.rm = TRUE</code> to skip them and get 2.</li>
+      <li><b>If/else:</b> <code>if (sum(myNumbers) &gt; 40) print("big") else print("small")</code> prints "big", because the sum is 55.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>The three data structures: vector, list, data frame</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Structure</th><th>Holds</th><th>Shape</th><th>Think of it as</th></tr></thead>
+      <tbody>
+        <tr><td>Vector <code>c()</code></td><td>One type only</td><td>1 dimension</td><td>A PHP array of one type</td></tr>
+        <tr><td>List <code>list()</code></td><td>Mixed types, even other lists</td><td>1 dimension</td><td>A PHP associative array or a JSON object</td></tr>
+        <tr><td>Data frame <code>data.frame()</code></td><td>One type per column</td><td>2 dimensions (rows × columns)</td><td>A SQL table; really a list of equal-length vectors</td></tr>
+      </tbody>
+    </table></div>
+<pre>myList &lt;- list(name = "Pat", scores = c(90, 85), passed = TRUE)
+length(myList)        <span class="c"># 3       (three elements, of three different types)</span>
+myList$scores         <span class="c"># 90 85</span>
+myList[["scores"]]    <span class="c"># 90 85   (double brackets: the element itself)</span>
+myList["scores"]      <span class="c"># a smaller LIST that still holds scores</span>
+myList[[2]][1]        <span class="c"># 90      (element 2, then its first value)</span></pre>
+    <ul>
+      <li>A <b>vector</b> forces one type (coercion). A <b>list</b> does not, so it can hold text, numbers and TRUE side by side.</li>
+      <li><code>[[ ]]</code> or <code>$</code> takes the element <b>out</b> of a list. Single <code>[ ]</code> gives back a list.</li>
+      <li>A data frame is a list of columns, so <code>is.list(df)</code> is TRUE and <code>length(df)</code> is the number of <b>columns</b>, not rows.</li>
+      <li><code>fromJSON()</code> often returns a list, which is why the JSON lab had to dig into it.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>R Markdown</h3>
+    <p>An <code>.Rmd</code> file mixes text, code chunks and their output in one document, like a Jupyter notebook. You <b>knit</b> it to HTML or PDF. Keep logical steps in separate chunks, use text between them as explanation, and remove <code>View()</code> before knitting.</p>
+  </div>
+
+  <h3>Quiz · Week 1</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>What does this return?</p><pre>x &lt;- c(2, 7, 4, 9)
+x[x &gt; 5]</pre>
+      <details><summary>Show answer</summary><div class="ans"><p><code>7 9</code>. <code>x &gt; 5</code> gives FALSE TRUE FALSE TRUE, and the brackets keep the TRUE positions.</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>What is <code>mode(c(1, TRUE))</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"numeric"</code>. TRUE becomes 1. Only a string would turn everything into "character".</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>What is <code>1:5 * 2</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>2 4 6 8 10</code>. The sequence is built first, then each element is doubled.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>What does <code>mean(c(1, NA, 3))</code> return, and how do you fix it?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>NA</code>. Use <code>mean(c(1, NA, 3), na.rm = TRUE)</code>, which gives 2.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>Structured or unstructured: (a) a MySQL orders table; (b) customer review text; (c) photos.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>(a) structured; (b) and (c) unstructured. There is much more unstructured data in the world.</p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>You need to store a name, a vector of three test scores and TRUE/FALSE for “passed” together. Which structure, and why not a vector?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>A <b>list</b>: <code>list(name = "Pat", scores = c(90, 85, 70), passed = TRUE)</code>. A vector would coerce everything to character.</p></div></details></div>
+    <div class="q"><span class="num">Q7</span><p><code>df</code> has 100 rows and 4 columns. What is <code>length(df)</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>4</code>. A data frame is a list of columns. Use <code>nrow(df)</code> for 100.</p></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 2 -->
+<section class="week" id="w2">
+  <div class="wk"><span class="n">Week 2</span><h2>Data frames and manipulating data</h2></div>
+  <div class="terms">
+    <span class="term"><b>Row</b> = case, instance, observation</span>
+    <span class="term"><b>Column</b> = variable, attribute, feature</span>
+    <span class="term"><b>Data frame:</b> a rectangle, one type per column</span>
+    <span class="term"><b>Tibble:</b> the tidyverse's nicer data frame</span>
+    <span class="term"><b>Factor:</b> a category with levels</span>
+  </div>
+
+  <div class="card">
+    <h3>Building and inspecting a data frame</h3>
+<pre>names  &lt;- c("Jeff", "Pat", "Joe")
+height &lt;- c(100, 103, 120)
+myFamily &lt;- data.frame(names, height)   <span class="c"># 1) vectors  2) combine</span>
+
+str(myFamily)       <span class="c"># 3 obs. of 2 variables, with each column's type</span>
+glimpse(myFamily)   <span class="c"># tidyverse version of str()</span>
+summary(myFamily)   <span class="c"># numbers: Min, 1st Qu., Median, Mean, 3rd Qu., Max</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>data.frame()</dt><dd>Builds a table from vectors of the same length. Each vector becomes a column named after it.</dd></div><div><dt>str()</dt><dd><b>Str</b>ucture: shows the number of rows and columns, each column's type and its first values. Like SQL <code>DESCRIBE</code>.</dd></div><div><dt>glimpse()</dt><dd>The tidyverse (dplyr) version of <code>str()</code>. It needs <code>library(tidyverse)</code> first.</dd></div><div><dt>summary()</dt><dd>Gives a quick summary of each column: six numbers for numeric columns and counts for factor columns.</dd></div></dl></div>
+    <ul>
+      <li>Every column has the <b>same type</b> inside it and the <b>same length</b> as the others, so the frame is always a rectangle.</li>
+      <li>The header (Name, Age …) is <b>not</b> a data row.</li>
+      <li>A good dataset has a <b>unique ID</b> per row, but R does <b>not enforce</b> uniqueness the way a primary key does.</li>
+      <li><code>summary()</code> gives six numbers for numeric columns and counts per level for factor columns.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Indexing: <code>[row, col]</code></h3>
+<pre>myFamily[1, 1]          <span class="c"># "Jeff"</span>
+myFamily[1, ]           <span class="c"># row 1, all columns:   Jeff 100</span>
+myFamily[ , 1]          <span class="c"># column 1 as a vector: "Jeff" "Pat" "Joe"</span>
+myFamily[-1, ]          <span class="c"># everything except row 1: Pat, Joe</span>
+myFamily[ , -1]         <span class="c"># drop column 1 → 100 103 120  (one column left, so a vector)</span>
+myFamily[2, "height"]   <span class="c"># 103</span>
+myFamily$height[2]      <span class="c"># 103   (the same thing)</span>
+myFamily[myFamily$height &gt; 101, ]   <span class="c"># Pat and Joe</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>df[row, col]</dt><dd>Picks rows and columns. The part before the comma is rows; after the comma is columns.</dd></div><div><dt>df[1, ]</dt><dd>A blank on one side means “all”: row 1 with all columns.</dd></div><div><dt>df[-1, ]</dt><dd>A minus sign means “everything except”: all rows except row 1.</dd></div><div><dt>df[2, "height"]</dt><dd>You can name a column in quotes instead of using its number.</dd></div><div><dt>df$height</dt><dd><code>$</code> takes one column out as a vector, like <code>$row-&gt;height</code> in PHP.</dd></div><div><dt>df[df$height &gt; 101, ]</dt><dd>A TRUE/FALSE test in the row slot keeps only the rows where it is TRUE. This is SQL's <code>WHERE</code>.</dd></div></dl></div>
+  </div>
+
+  <div class="card">
+    <h3><code>sort()</code> vs <code>order()</code>: a favorite exam question</h3>
+<pre>v &lt;- c(30, 10, 20)
+sort(v)      <span class="c"># 10 20 30   → the VALUES, sorted</span>
+order(v)     <span class="c"># 2 3 1      → the POSITIONS, in sorted order</span>
+which.max(v) <span class="c"># 1          → position of the biggest</span>
+which.min(v) <span class="c"># 2          → position of the smallest</span>
+
+sortedDF &lt;- mtcars[order(mtcars$mpg), ]   <span class="c"># base R way to sort a data frame</span>
+sortedDF &lt;- mtcars %&gt;% arrange(mpg)        <span class="c"># tidyverse way</span>
+mtcars[which.max(mtcars$mpg), ]            <span class="c"># the whole row of the best car</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>sort()</dt><dd>Returns the values in increasing order.</dd></div><div><dt>order()</dt><dd>Returns the <b>positions</b> that would put the values in order. Use it as a row index to sort a whole table.</dd></div><div><dt>which.max() / which.min()</dt><dd>Return the position of the biggest / smallest value.</dd></div><div><dt>mtcars</dt><dd>A table built into R: 32 car models with 11 columns such as mpg, cylinders (cyl) and horsepower (hp).</dd></div><div><dt>%&gt;%</dt><dd>The pipe: sends the result on its left into the function on its right. Read it as “then”, like chaining methods in Laravel.</dd></div><div><dt>arrange()</dt><dd>dplyr's sort for a whole table, like SQL <code>ORDER BY</code>. <code>arrange(desc(mpg))</code> sorts high to low.</dd></div></dl></div>
+    <p class="warn"><b>Why does <code>sort(mtcars)</code> fail?</b> <code>sort()</code> works on a vector, not a table. To sort rows, you need the row positions from <code>order()</code>, then use them as the row index.</p>
+  </div>
+
+  <div class="card">
+    <h3>Base R vs tidyverse: the same jobs, two ways</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Job</th><th>Tidyverse</th><th>Base R</th></tr></thead>
+      <tbody>
+        <tr><td>One column</td><td><code>select(mtcars, mpg)</code></td><td><code>mtcars[ , "mpg"]</code> · <code>mtcars$mpg</code></td></tr>
+        <tr><td>Several columns</td><td><code>select(mtcars, mpg, hp)</code></td><td><code>mtcars[ , c("mpg", "hp")]</code></td></tr>
+        <tr><td>Rows by position</td><td><code>slice(mtcars, 1:2)</code></td><td><code>mtcars[1:2, ]</code></td></tr>
+        <tr><td>Rows by condition</td><td><code>filter(mtcars, mpg &gt; 28)</code></td><td><code>mtcars[mtcars$mpg &gt; 28, ]</code></td></tr>
+        <tr><td>Add a column</td><td><code>mutate(df, carName = rownames(df))</code></td><td><code>df$carName &lt;- rownames(df)</code></td></tr>
+        <tr><td>Sort</td><td><code>arrange(mtcars, mpg)</code></td><td><code>mtcars[order(mtcars$mpg), ]</code></td></tr>
+        <tr><td>Mean per group</td><td><code>group_by(cyl) %&gt;% summarize(mean(mpg))</code></td><td><code>mean(df[df$cyl == 4, "mpg"])</code>, once per group</td></tr>
+      </tbody>
+    </table></div>
+<pre>myCars %&gt;% group_by(cyl) %&gt;% summarize(mpg = mean(mpg))
+<span class="c">#   cyl   mpg
+# 1   4  26.7
+# 2   6  19.7
+# 3   8  15.1</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>select()</dt><dd>dplyr: keeps the columns you name, like SQL <code>SELECT col</code>.</dd></div><div><dt>slice()</dt><dd>dplyr: keeps rows by position. <code>1:2</code> means rows 1 and 2.</dd></div><div><dt>filter()</dt><dd>dplyr: keeps rows where a test is TRUE, like SQL <code>WHERE</code>.</dd></div><div><dt>mutate()</dt><dd>dplyr: adds a new column or changes one.</dd></div><div><dt>rownames()</dt><dd>Returns the row labels. In <code>mtcars</code> the car names are row labels, not a column.</dd></div><div><dt>==</dt><dd>Tests whether two things are equal (TRUE/FALSE). A single <code>=</code> is only for naming arguments.</dd></div><div><dt>group_by() + summarize()</dt><dd>dplyr: <code>group_by()</code> marks the groups like SQL <code>GROUP BY</code>, then <code>summarize()</code> returns one row per group.</dd></div></dl></div>
+  </div>
+
+  <div class="card">
+    <h3>Two pipes</h3>
+<pre>x &lt;- c(4, 1, 10, 5)
+x %&gt;% min      <span class="c"># 1   tidyverse pipe: parentheses optional</span>
+x |&gt; min()     <span class="c"># 1   base R pipe: parentheses REQUIRED</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>min()</dt><dd>Returns the smallest value. <code>max()</code> returns the biggest.</dd></div><div><dt>|&gt;</dt><dd>Base R's own pipe (R 4.1 and later). It does the same job as <code>%&gt;%</code> without loading any package, but it always needs the parentheses.</dd></div></dl></div>
+    <p>Read a pipe as "and then". <code>mtcars %&gt;% filter(mpg &gt; 28) %&gt;% select(mpg, hp)</code> means "take mtcars, then keep rows with mpg over 28, then keep two columns".</p>
+    <p class="warn"><b>Tibbles</b> print neatly, show each column's type, and don't change your column names or types behind your back.</p>
+  </div>
+
+  <h3>Quiz · Week 2</h3>
+  <p class="warn">These are the "Sample R Coding Questions" style from Lecture 2. Use <code>myFamily</code> above (Jeff 100, Pat 103, Joe 120).</p>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>What does <code>myFamily %&gt;% slice(c(1, 3))</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>  names height
+1  Jeff    100
+2   Joe    120</pre><p>Notice the rows are renumbered 1 and 2.</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>What does <code>myFamily[-1, ]</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>  names height
+2   Pat    103
+3   Joe    120</pre><p>Row 1 is dropped. Base R keeps the original row labels 2 and 3.</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>What is <code>order(c(30, 10, 20))</code>? And <code>sort(c(30, 10, 20))</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>order</code> gives <code>2 3 1</code> (positions). <code>sort</code> gives <code>10 20 30</code> (values).</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>Write two ways to get the <code>height</code> column as a vector.</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>myFamily$height</code> and <code>myFamily[ , "height"]</code> (or <code>myFamily[ , 2]</code>). Note that <code>select(myFamily, height)</code> returns a one-column data frame, not a vector.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>Write code to show the name of the tallest person.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>myFamily$names[which.max(myFamily$height)]   <span class="c"># "Joe"</span></pre></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>Why does <code>x |&gt; min</code> give an error but <code>x %&gt;% min</code> works?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The base R pipe <code>|&gt;</code> needs the parentheses: <code>x |&gt; min()</code>.</p></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 3 -->
+<section class="week" id="w3">
+  <div class="wk"><span class="n">Week 3</span><h2>Functions and descriptive statistics</h2></div>
+  <div class="terms">
+    <span class="term"><b>DRY:</b> don't repeat yourself</span>
+    <span class="term"><b>Argument:</b> the input</span>
+    <span class="term"><b>Return:</b> <code>return()</code> or the last line</span>
+    <span class="term"><b>Scope:</b> where a name is visible</span>
+    <span class="term"><b>Descriptive</b> vs <b>inferential</b> statistics</span>
+  </div>
+
+  <div class="card">
+    <h3>Writing functions</h3>
+<pre>myFunc &lt;- function(x) {
+  return(3 * x)
+}
+myFunc(4)          <span class="c"># 12</span>
+
+<span class="c"># Sort a data frame's columns alphabetically by name</span>
+colNameSort &lt;- function(inputDF) {
+  nameList &lt;- colnames(inputDF)
+  inputDF[ , order(nameList)]       <span class="c"># last line is returned</span>
+}
+testDF &lt;- colNameSort(mtcars)        <span class="c"># columns now am, carb, cyl, disp, ...</span></pre>
+    <ul>
+      <li>Why functions: reuse the code, share it with others, and make code easier to read.</li>
+      <li>Start every function with a short <b>block comment</b> saying what goes in and what comes out, then <b>test</b> it on known data.</li>
+      <li>A function can return a whole data frame, as in HW 4's <code>stats_fn</code>:</li>
+    </ul>
+<pre>stats_fn &lt;- function(v) {
+  data.frame(min = min(v), mean = mean(v), max = max(v),
+             median = median(v), sd = sd(v))
+}
+stats_fn(1:10)$mean     <span class="c"># 5.5   ($ pulls one value out of the result)</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>function(x) { … }</dt><dd>Defines your own function. <code>x</code> is the input (argument); the code inside the braces runs each time you call it.</dd></div><div><dt>return()</dt><dd>Sends a value back out of the function. Without it, R returns the value of the last line.</dd></div><div><dt>colnames()</dt><dd>Returns the column names of a table as a text vector.</dd></div><div><dt>df[ , order(names)]</dt><dd>Uses <code>order()</code> in the column slot, so the columns are rearranged into alphabetical order.</dd></div><div><dt>data.frame(min = …)</dt><dd>Names each column as you build it: <code>min = min(v)</code> makes a column called min.</dd></div><div><dt>median() / sd()</dt><dd>The middle value / the standard deviation (typical distance from the mean). Both are explained under “Center and spread” below.</dd></div></dl></div>
+  </div>
+
+  <div class="card">
+    <h3>Scope: the tricky lecture example</h3>
+<pre>x &lt;- 2
+z &lt;- 3
+myFunc &lt;- function(z) {
+  return(z * x)
+}
+myFunc(x)          <span class="c"># 4</span></pre>
+    <p>Trace it: <code>myFunc(x)</code> passes the value 2, so <b>inside the function</b> <code>z</code> is 2. The outside <code>z &lt;- 3</code> is hidden by the argument. <code>x</code> isn't defined inside, so R looks outside and finds 2. Result: 2 × 2 = <b>4</b>.</p>
+    <div class="sql"><b>PHP brain:</b> it's like a closure that can read outer variables, and the parameter name always wins over an outer variable with the same name.</div>
+  </div>
+
+  <div class="card">
+    <h3><code>ifelse()</code> for a whole column</h3>
+<pre>ifelse(c(5, 0, 2) &gt; 0, "yes", "no")       <span class="c"># "yes" "no" "yes"</span>
+
+<span class="c"># HW 3: avoid dividing by zero</span>
+df$ratio &lt;- ifelse(df$Distributed &gt; 0, df$Administered / df$Distributed, NA)
+mean(df$ratio, na.rm = TRUE)</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>ifelse(test, yes, no)</dt><dd>Checks the test for every element and returns <code>yes</code> where it is TRUE and <code>no</code> where it is FALSE. It is SQL's <code>CASE WHEN</code>.</dd></div><div><dt>NA</dt><dd>“Not Available”: R's marker for a missing value, like SQL <code>NULL</code>.</dd></div><div><dt>na.rm = TRUE</dt><dd>“NA remove”: skip missing values. Without it, <code>mean()</code> returns NA if even one value is missing.</dd></div></dl></div>
+    <p class="warn"><code>if</code> checks <b>one</b> TRUE/FALSE; <code>ifelse()</code> checks <b>every element</b> and returns a vector.</p>
+  </div>
+
+  <div class="card">
+    <h3>Descriptive vs inferential statistics</h3>
+    <div class="two">
+      <div><span class="lbl">Descriptive</span><p>Describes the data you have. A summary, a fact, not a prediction. Mean, median, sd.</p></div>
+      <div><span class="lbl">Inferential</span><p>Generalizes from a sample to the population, tests hypotheses, and builds predictive models.</p></div>
+    </div>
+    <p>Whatever data you have is only a <b>sample</b>, so there is always <b>uncertainty</b> about how well it represents the population.</p>
+  </div>
+
+  <div class="card">
+    <h3>Center and spread</h3>
+    <div class="two">
+      <div><span class="lbl">Central tendency: "what's typical?"</span>
+        <ul><li><b>Mean:</b> the average</li><li><b>Median:</b> the middle value</li><li><b>Mode:</b> the most frequent value</li></ul></div>
+      <div><span class="lbl">Dispersion: "how spread out?"</span>
+        <ul><li><b>Range:</b> max − min</li><li><b>Variance:</b> average squared deviation from the mean</li><li><b>SD:</b> square root of the variance, in the original units</li></ul></div>
+    </div>
+<pre>v &lt;- c(0, 0, 0, 2, 3, 4, 5)
+mean(v)     <span class="c"># 2</span>
+median(v)   <span class="c"># 2</span>
+<span class="c"># the statistical mode is 0 (it appears 3 times)</span>
+mode(v)     <span class="c"># "numeric"   ← TRAP: mode() gives the TYPE, not the most frequent value</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>mode()</dt><dd>Despite its name, it returns the data <b>type</b> ("numeric", "character"). To get the most common value, use <code>names(which.max(table(v)))</code>: <code>table()</code> counts each value, <code>which.max()</code> finds the biggest count, and <code>names()</code> reads off its label.</dd></div></dl></div>
+    <p><b>How variance is built:</b> deviations from the mean → square them → add them up (the <b>sum of squares</b>) → divide (variance) → square root (standard deviation).</p>
+<pre>var(c(2, 4, 6))   <span class="c"># 4   deviations -2, 0, 2 → squares 4, 0, 4 → sum 8 → 8 / (3 - 1)</span>
+sd(c(2, 4, 6))    <span class="c"># 2</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>var()</dt><dd>Variance: the sum of squared deviations divided by n − 1 (R treats your data as a sample).</dd></div><div><dt>sd()</dt><dd>Standard deviation: the square root of the variance, in the same units as the data.</dd></div></dl></div>
+    <p class="warn"><b>Why spread matters (the truck example):</b> containers A are 2, 5, 5 tons and B are 1, 3, 8 tons. Both have a mean of 4, but the range of A is 3 and of B is 7. B needs the bigger truck. The mean alone hides that. SD is easier to explain than variance because it's in tons, not "squared tons".</p>
+  </div>
+
+  <div class="card">
+    <h3>Histograms and random normal data</h3>
+<pre>stateDF &lt;- data.frame(state = state.name, population = state.x77[ , 1])
+mean(stateDF$population)          <span class="c"># 4246.42</span>
+median(stateDF$population)        <span class="c"># 2838.5   (lower: a few huge states pull the mean up)</span>
+hist(stateDF$population)          <span class="c"># most states in the first bars: right-skewed</span>
+hist(stateDF$population, breaks = 20)   <span class="c"># more, thinner bars</span>
+hist(rnorm(500, 4246.42, 4464.49))      <span class="c"># 500 normal values with the same mean and sd</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>state.name</dt><dd>A built-in vector of the 50 US state names.</dd></div><div><dt>state.x77[ , 1]</dt><dd>A built-in table (matrix) of state facts; <code>[ , 1]</code> takes its first column, Population, in thousands.</dd></div><div><dt>hist()</dt><dd>Draws a histogram: it splits the values into bins and draws one bar per bin, as tall as the count.</dd></div><div><dt>breaks = 20</dt><dd>Asks for about 20 bins instead of the default.</dd></div><div><dt>rnorm(n, mean, sd)</dt><dd><b>R</b>andom <b>norm</b>al: makes n random numbers from a bell curve with the mean and sd you give.</dd></div></dl></div>
+    <p>A histogram shows <b>frequencies</b>: how many values fall in each bin. When mean &gt; median, the data has a long right tail.</p>
+  </div>
+
+  <h3>Quiz · Week 3</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>What does this return?</p><pre>x &lt;- 2
+z &lt;- 3
+myFunc &lt;- function(z) { return(z * x) }
+myFunc(x)</pre>
+      <details><summary>Show answer</summary><div class="ans"><p><code>4</code>. Inside the function <code>z</code> is the argument (2), and <code>x</code> is found outside (2).</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>What is <code>mode(c(5, 5, 9))</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"numeric"</code>. R's <code>mode()</code> reports the data type, not the most common value. R has no built-in statistical mode function.</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>Write a function <code>popDensity</code> that takes <code>population</code> and <code>area</code> and returns population per unit of area.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>popDensity &lt;- function(population, area) {
+  population / area
+}</pre><p>Because of vector math, it works on whole columns too: <code>popDensity(df$pop, df$area)</code>.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>Compute the variance and SD of <code>c(2, 4, 6)</code> by hand.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The mean is 4. Squared deviations: 4, 0, 4, so the sum is 8. Variance = 8 / 2 = <b>4</b>; SD = √4 = <b>2</b>.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>The mean population of states is 4,246 and the median is 2,839. What does that tell you about the shape?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>It's <b>right-skewed</b>: a few very large states pull the mean above the median.</p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>What does <code>ifelse(c(5, 0, 2) &gt; 0, "yes", "no")</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"yes" "no" "yes"</code></p></div></details></div>
+  </div>
+</section>
+
+<div class="band">
+  <span class="eyebrow">Part 2 · Weeks 4–7</span>
+  <h2>Sampling, getting data, charts and maps</h2>
+</div>
+
+<!-- WEEK 4 -->
+<section class="week" id="w4">
+  <div class="wk"><span class="n">Week 4</span><h2>Sampling and inferential statistics</h2></div>
+  <div class="terms">
+    <span class="term"><b>Population:</b> everything you want to study</span>
+    <span class="term"><b>Sample:</b> the part you draw</span>
+    <span class="term"><b>Random sampling:</b> every element has an equal chance</span>
+    <span class="term"><b>With replacement:</b> put it back before the next draw</span>
+    <span class="term"><b>Sampling distribution:</b> many sample means</span>
+  </div>
+
+  <div class="card">
+    <h3>Population and sample</h3>
+    <p>A population is usually <b>unreachable</b> as a whole: all 1.5 billion iPhones, all US voters, all the beer in the Guinness factory. So we sample, systematically. One random draw is unpredictable; patterns only show up in the <b>long run</b>, over many draws.</p>
+  </div>
+
+  <div class="card">
+    <h3>Coin flips with <code>rbinom()</code></h3>
+<pre>rbinom(n = 8, size = 1, prob = 0.5)       <span class="c"># 8 trials of 0 or 1, e.g. 1 0 0 1 0 0 0 0</span>
+set.seed(10)                               <span class="c"># same "random" numbers every run</span>
+f &lt;- factor(rbinom(8, 1, 0.5), labels = c("red", "blue"))   <span class="c"># 0 → red, 1 → blue</span>
+table(f)                                   <span class="c"># counts per color</span>
+barplot(table(f))                          <span class="c"># bar chart of the counts</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>rbinom(n, size, prob)</dt><dd><b>R</b>andom <b>binom</b>ial: random results for events with two outcomes. <code>n</code> = how many results, <code>size</code> = tries per result, <code>prob</code> = chance of success. With size = 1, each result is a single 0 or 1, like one coin flip.</dd></div><div><dt>set.seed()</dt><dd>Fixes the starting point of the random number generator, so “random” results are the same every run.</dd></div><div><dt>factor(…, labels = )</dt><dd>Turns values into categories and gives them readable names: 0 becomes "red", 1 becomes "blue".</dd></div><div><dt>table()</dt><dd>Counts how many times each value appears, like counting votes. Same as SQL <code>SELECT x, COUNT(*) … GROUP BY x</code>.</dd></div><div><dt>barplot()</dt><dd>Draws one bar per category, as tall as its count.</dd></div></dl></div>
+    <p>The binomial distribution is for events with <b>two outcomes</b>. With 8 flips you can easily get 6 vs 2; with 80 you get closer to 50/50. That's the Law of Large Numbers at work.</p>
+  </div>
+
+  <div class="card">
+    <h3>Sample, replicate, mean of means</h3>
+<pre>realMean &lt;- mean(stateDF$population)                         <span class="c"># 4246.42</span>
+sample(stateDF$population, size = 6, replace = TRUE)          <span class="c"># 6 random states</span>
+mean(sample(stateDF$population, size = 6, replace = TRUE))    <span class="c"># one sample mean</span>
+
+means &lt;- replicate(2000, mean(sample(stateDF$population, size = 16, replace = TRUE)))
+length(means)    <span class="c"># 2000</span>
+mean(means)      <span class="c"># ≈ 4242, very close to 4246</span>
+hist(means)      <span class="c"># a bell curve</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>sample(x, size, replace)</dt><dd>Picks <code>size</code> random values from <code>x</code>. <code>replace = TRUE</code> puts each one back, so a value can be picked twice.</dd></div><div><dt>replicate(k, expr)</dt><dd>Runs the same code k times and keeps all k results in a vector. Here it makes 2,000 sample means.</dd></div><div><dt>stateDF</dt><dd>The data frame of states built in Week 3 (state names and populations).</dd></div></dl></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Replications</th><th>Mean of means</th><th>Error vs 4,246</th></tr></thead>
+      <tbody><tr><td>4</td><td>4,096</td><td>3.5%</td></tr><tr><td>400</td><td>4,159</td><td>2%</td></tr><tr><td>2,000</td><td>4,242</td><td>0.09%</td></tr></tbody>
+    </table></div>
+    <div class="sql"><b>Dev brain:</b> <code>replicate(2000, expr)</code> is a <code>for</code> loop that runs <code>expr</code> 2000 times and pushes each result into an array.</div>
+  </div>
+
+  <div class="card">
+    <h3>LLN vs CLT: know the difference</h3>
+    <div class="two">
+      <div><span class="lbl">Law of Large Numbers → accuracy</span><p>Increase the <b>number of observations</b> (or replications), and the sample statistic gets closer to the true population value. Many coin tosses → close to 50% heads.</p></div>
+      <div><span class="lbl">Central Limit Theorem → shape</span><p>Increase the <b>size of each sample</b>, and the sample means form a <b>normal bell curve</b>, even if the population is skewed.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Quantiles and the mystery sample</h3>
+<pre>quantile(0:200, probs = c(0.25, 0.75))           <span class="c"># 25%: 50   75%: 150</span>
+quantile(means, probs = c(0.025, 0.975))         <span class="c"># edges of the middle 95%, e.g. 2391 and 6591</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>quantile(x, probs)</dt><dd>Returns the value below which a given share of the data falls. <code>probs = c(0.25, 0.75)</code> asks for the 25% and 75% points.</dd></div><div><dt>0:200</dt><dd>The whole numbers from 0 to 200 (201 values).</dd></div></dl></div>
+    <ul>
+      <li><b>Percentile</b> and <b>quartile</b> mark positions. A <b>quantile</b> is the same idea written as a decimal; the median is the 0.50 quantile (the 50th percentile, the 2nd quartile).</li>
+      <li>The mystery sample's mean was <b>2,276</b>, below the 2.5% cut-off of 2,391. A mean that low would happen only about 2% of the time if it came from the states, so we infer it came from somewhere else.</li>
+    </ul>
+    <p><b>Statistical inference in four steps:</b></p>
+    <ol>
+      <li>Build a comparison distribution (many sample means).</li>
+      <li>Mark the central 95%; everything outside is "extreme".</li>
+      <li>Compare the new sample's mean with that distribution.</li>
+      <li>If it lands in the extreme zone, tentatively conclude it came from a different source.</li>
+    </ol>
+  </div>
+
+  <h3>Quiz · Week 4</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>What does <code>quantile(0:200, probs = c(0.25, 0.75))</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>50</code> and <code>150</code>.</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>What is <code>length(replicate(400, mean(sample(pop, 16, replace = TRUE))))</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>400</code>. One mean per replication.</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>What does <code>replace = TRUE</code> mean in <code>sample()</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Each drawn value is put back before the next draw, so the same value can appear more than once.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>LLN or CLT? (a) "My histogram of 2000 sample means is bell-shaped." (b) "With more replications, my mean of means got closer to 4,246."</p>
+      <details><summary>Show answer</summary><div class="ans"><p>(a) <b>CLT</b>, which is about shape. (b) <b>LLN</b>, which is about accuracy.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>A new sample's mean sits at the 40th percentile of your sampling distribution. Conclusion?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>It's inside the middle 95%, so there's <b>no evidence</b> it came from a different population.</p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>What does <code>set.seed()</code> do, and why use it?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>It fixes the random number generator's starting point, so the same "random" results come out every run. That makes your work reproducible.</p></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 5 -->
+<section class="week" id="w5">
+  <div class="wk"><span class="n">Week 5</span><h2>Importing data: CSV, Excel, databases and JSON</h2></div>
+  <div class="terms">
+    <span class="term"><b>Structured:</b> CSV, Excel, SQL tables</span>
+    <span class="term"><b>Semi-structured:</b> JSON, XML</span>
+    <span class="term"><b>Unstructured:</b> text, images, audio, video</span>
+    <span class="term"><b>Binary:</b> RDS, Parquet, Excel (fast, compact)</span>
+    <span class="term"><b>Human-readable / flat:</b> CSV, JSON, TXT (easy to inspect, bigger)</span>
+  </div>
+
+  <div class="card">
+    <h3><code>read.csv()</code> vs <code>read_csv()</code></h3>
+    <div class="two">
+      <div><span class="lbl">read.csv() · base R</span><ul><li>Slow on big files</li><li>No diagnostics</li><li>Gives a data.frame</li><li>Changes ("munges") column names</li><li>Behaves differently per OS</li></ul></div>
+      <div><span class="lbl">read_csv() · readr / tidyverse ✓</span><ul><li>About 10× faster</li><li>Reports parsing problems</li><li>Gives a tibble</li><li>Keeps column names</li><li>Same on every OS</li></ul></div>
+    </div>
+<pre>df &lt;- read_csv("https://intro-data-science.s3.us-east-1.amazonaws.com/statesNew.csv")</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>read_csv("file or URL")</dt><dd>From readr (loaded by <code>library(tidyverse)</code>): reads a CSV file into a tibble. It can read straight from a web address.</dd></div></dl></div>
+    <p class="warn">If you use RStudio's Import Dataset button, <b>copy the generated code into your file</b> so the import is part of your work.</p>
+  </div>
+
+  <div class="card">
+    <h3>Cleaning a messy Excel file (the census example)</h3>
+<pre>library(readxl)
+dataFile &lt;- paste0(part1, part2)            <span class="c"># glue two strings into one URL</span>
+download.file(dataFile, "tmpExcelFile.xls") <span class="c"># save it locally</span>
+testFrame &lt;- read_excel("tmpExcelFile.xls")
+
+testFrame$stateName &lt;- pull(testFrame, 1)   <span class="c"># pull() = column 1 as a vector</span>
+testFrame &lt;- testFrame[ , -1]               <span class="c"># drop the old column 1</span>
+testFrame$stateName &lt;- str_replace(testFrame$stateName, "\\.", "")   <span class="c"># remove the "."</span>
+testFrame &lt;- slice(testFrame, -1:-8)        <span class="c"># drop the 8 junk header rows</span>
+testFrame &lt;- slice(testFrame, -52:-58)      <span class="c"># drop the junk footer rows</span>
+testFrame &lt;- testFrame %&gt;% rename(april10census = "...2")   <span class="c"># new = old</span>
+testFrame &lt;- testFrame %&gt;% mutate_at(vars(april10census, july11pop), as.numeric)
+testFrame &lt;- testFrame %&gt;% filter(stateName != "District of Columbia")
+testFrame &lt;- testFrame %&gt;% add_column(region = state.region)</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>library(readxl)</dt><dd>Loads the readxl package. <code>library(tidyverse)</code> does <b>not</b> load it.</dd></div><div><dt>paste0()</dt><dd>Joins pieces of text with nothing between them.</dd></div><div><dt>download.file(url, name)</dt><dd>Saves a file from the internet to your computer under the given name.</dd></div><div><dt>read_excel()</dt><dd>From readxl: reads an Excel sheet into a tibble.</dd></div><div><dt>pull(df, 1)</dt><dd>dplyr: takes one column out as a plain vector.</dd></div><div><dt>str_replace(x, pattern, new)</dt><dd>From stringr: replaces the <b>first</b> match of a pattern in each text value.</dd></div><div><dt>slice(df, -1:-8)</dt><dd>Drops rows 1 to 8 (minus means “except”).</dd></div><div><dt>rename(new = old)</dt><dd>dplyr: renames a column. The new name goes on the left.</dd></div><div><dt>mutate_at(vars(a, b), as.numeric)</dt><dd>dplyr: applies the same function (here, convert to number) to several columns at once. <code>vars()</code> lists the columns.</dd></div><div><dt>as.numeric()</dt><dd>Converts text to numbers. Text that isn't a number becomes NA.</dd></div><div><dt>!=</dt><dd>“Not equal to”.</dd></div><div><dt>add_column()</dt><dd>From tibble: adds a column to a table. <code>state.region</code> is a built-in vector of each state's region.</dd></div></dl></div>
+    <p class="warn"><b>Traps:</b> <code>"\\."</code> means a literal dot, because a plain <code>.</code> matches any character. <code>str_replace()</code> replaces only the <b>first</b> match; <code>gsub()</code> and <code>str_replace_all()</code> replace <b>all</b>. So <code>str_replace("N.Y.", "\\.", "")</code> gives <code>"NY."</code>.</p>
+  </div>
+
+  <div class="card">
+    <h3><code>group_by()</code> then <code>summarize()</code> vs then <code>mutate()</code></h3>
+<pre>d &lt;- data.frame(g = c("a", "a", "b", "b"), v = c(1, 3, 5, 7))
+d %&gt;% group_by(g) %&gt;% summarize(m = mean(v))   <span class="c"># 2 rows:  a 2 | b 6</span>
+d %&gt;% group_by(g) %&gt;% mutate(m = mean(v))      <span class="c"># 4 rows:  every row keeps v and gets its group's m</span></pre>
+    <div class="sql"><b>SQL brain:</b> <code>summarize</code> is <code>GROUP BY</code> (collapses rows). <code>mutate</code> after <code>group_by</code> is a window function, <code>AVG(v) OVER (PARTITION BY g)</code>, which keeps every row.</div>
+  </div>
+
+  <div class="card">
+    <h3>Cleaning helpers from the homework</h3>
+<pre>head(df); tail(df); dim(df)                 <span class="c"># first rows, last rows, size</span>
+table(df$Location)                          <span class="c"># counts per value</span>
+length(unique(df$Location))                 <span class="c"># number of distinct values</span>
+gsub("US", "not_reported", df$Location)     <span class="c"># replace text everywhere</span>
+sum(is.na(df$data_value))                   <span class="c"># how many missing</span>
+nrow(df[!is.na(df$data_value), ])           <span class="c"># rows that are NOT missing</span>
+df$data_value &lt;- as.numeric(df$data_value)  <span class="c"># text → number</span>
+paste0(df$city, ", ", df$state)             <span class="c"># "Syracuse, NY"</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>head() / tail()</dt><dd>Show the first / last 6 rows, like SQL <code>LIMIT 6</code>.</dd></div><div><dt>dim() / nrow()</dt><dd><code>dim()</code> gives rows and columns; <code>nrow()</code> gives only the number of rows.</dd></div><div><dt>unique()</dt><dd>Keeps one copy of each value, like SQL <code>SELECT DISTINCT</code>.</dd></div><div><dt>gsub(pattern, new, x)</dt><dd><b>G</b>lobal <b>sub</b>stitute: replaces <b>every</b> match, like SQL <code>REPLACE()</code>.</dd></div><div><dt>is.na() / !is.na()</dt><dd><code>is.na()</code> returns TRUE where a value is missing; <code>!</code> flips it, so <code>!is.na()</code> is TRUE where a value exists.</dd></div><div><dt>sum(is.na(x))</dt><dd>TRUE counts as 1 and FALSE as 0, so this counts the missing values.</dd></div></dl></div>
+    <p class="warn"><b>gsub trap:</b> it replaces the pattern <b>inside</b> words too. <code>gsub("US", "X", c("US", "USA", "NY"))</code> gives <code>"X" "XA" "NY"</code>.</p>
+  </div>
+
+  <div class="card">
+    <h3>Databases</h3>
+    <ul>
+      <li><b>Why not a spreadsheet?</b> The data may be too big for memory or disk, privacy may limit what you can copy, and you want the current, official version (a "single source of truth").</li>
+      <li>Databases enforce <b>relationships</b> between tables to avoid duplication, hold lots of data, and let many people use it at once. They suit <b>transactional</b> data.</li>
+      <li>R talks to them with a package per system: <b>RMySQL</b>, ROracle, RSQLite. <b>sqldf</b> lets you run SQL on a data frame.</li>
+    </ul>
+    <div class="sql"><b>You already know this part:</b> <code>SELECT name FROM customers WHERE age &lt; 48;</code> is the same query the lecture shows.</div>
+  </div>
+
+  <div class="card">
+    <h3>JSON from a web API (Citi Bike)</h3>
+<pre>library(RCurl); library(jsonlite)
+bikeURL &lt;- "https://gbfs.citibikenyc.com/gbfs/en/station_status.json"
+apiResult &lt;- getURL(bikeURL)        <span class="c"># raw text of the response</span>
+results &lt;- fromJSON(apiResult)      <span class="c"># parsed into nested lists</span>
+str(results)                        <span class="c"># List: $data → $stations (a data.frame)</span>
+stations &lt;- results$data$stations   <span class="c"># dig down with $</span>
+
+colsToKeep &lt;- c("station_id", "num_bikes_available", "num_docks_available")
+stations2 &lt;- stations %&gt;% select(all_of(colsToKeep))   <span class="c"># same as stations[ , colsToKeep]</span>
+mean(stations2$num_bikes_available) |&gt; round()
+nrow(stations2[stations2$num_bikes_available &gt; 0, ])   <span class="c"># stations with a bike</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>library(RCurl); library(jsonlite)</dt><dd>Load two packages: RCurl downloads from the web, jsonlite reads JSON.</dd></div><div><dt>getURL(url)</dt><dd>Downloads a web page or API response and returns it as one long piece of text.</dd></div><div><dt>fromJSON(text)</dt><dd>Turns JSON text into R objects: lists and data frames. Like PHP's <code>json_decode()</code>.</dd></div><div><dt>results$data$stations</dt><dd>Chained <code>$</code>: go into <code>data</code>, then into <code>stations</code>, like <code>$results-&gt;data-&gt;stations</code>.</dd></div><div><dt>all_of(cols)</dt><dd>Tells <code>select()</code> that the column names are stored in a text vector.</dd></div><div><dt>round()</dt><dd>Rounds a number to whole units (or to the digits you ask for).</dd></div></dl></div>
+    <ul>
+      <li>JSON is <b>{"key": value}</b> pairs, possibly nested. It's what apps use to talk to each other over the internet.</li>
+      <li><b>Why JSON?</b> Easy to parse (easier than CSV or XML) and easy to update in real time. <b>Why publish the data at all?</b> So others can build tools on it.</li>
+      <li><code>prettify(apiResult)</code> prints the raw JSON with indentation.</li>
+    </ul>
+  </div>
+
+  <h3>Quiz · Week 5</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>Name one structured, one semi-structured and one unstructured format.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>For example: CSV (structured), JSON (semi-structured), images (unstructured).</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>Why prefer <code>read_csv()</code> over <code>read.csv()</code>? Give two reasons.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Any two of: faster, reports parsing errors, keeps column names, returns a tibble, same behavior on every OS.</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>A data frame has 6 rows in 3 groups. How many rows come back from <code>group_by(g) %&gt;% summarize(...)</code>? From <code>group_by(g) %&gt;% mutate(...)</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><b>3</b> (one per group) and <b>6</b> (every row kept).</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>What does <code>paste0("Syracuse", ", ", "NY")</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"Syracuse, NY"</code>. <code>paste0</code> joins with no separator; <code>paste</code> would add spaces.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>What does <code>as.numeric(c("12", "abc"))</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>12 NA</code>, with a warning. Text that isn't a number becomes NA.</p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>After <code>results &lt;- fromJSON(apiResult)</code>, the stations table is inside <code>data</code>. Write the line that gets it.</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>stations &lt;- results$data$stations</code></p></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 6 -->
+<section class="week" id="w6">
+  <div class="wk"><span class="n">Week 6</span><h2>Visualization and ggplot2</h2></div>
+  <div class="terms">
+    <span class="term"><b>Information visualization:</b> interactive visual representations of abstract data</span>
+    <span class="term"><b>Scientific visualization:</b> data with a real physical shape</span>
+    <span class="term"><b>Pre-attentive:</b> what the eye spots instantly</span>
+    <span class="term"><b>Grammar of Graphics</b> = the "gg"</span>
+  </div>
+
+  <div class="card">
+    <h3>Why and how we visualize</h3>
+    <ul>
+      <li>Vision is the <b>highest-bandwidth sense</b>: fast, parallel, pre-attentive and great at spotting patterns.</li>
+      <li>Visual components: color, size, texture, proximity, annotation and interactivity (selecting, filtering, zooming, animation).</li>
+      <li><b>Cleveland &amp; McGill (1984)</b> ranked encodings from easiest to hardest to read: <b>position on a common scale</b> (bars, scatter) → position on non-aligned scales → length, direction, angle → area → volume, curvature → <b>shading and color saturation</b> (heat maps).</li>
+      <li>That ranking is why <b>3D pie charts are "evil"</b>: angles and volume are hard to judge, and 3D distorts them further.</li>
+      <li>Most jobs need only <b>three charts: bar, line and scatter</b>. Bar axes should start at zero.</li>
+      <li><b>Tufte:</b> make the simplest chart that conveys the information. Cut noise and clutter.</li>
+      <li>Choose colors that fit the data, and remember <b>accessibility</b>: about 300 million people have some color blindness. <b>WCAG 1.4.1</b> says color must not be the <i>only</i> way information is shown.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>ggplot = data + aesthetics + geometry</h3>
+<pre>myPlot &lt;- ggplot(mpg)                       <span class="c"># the data (a data frame)</span>
+myPlot &lt;- myPlot + aes(x = displ, y = hwy)  <span class="c"># the aesthetics: which columns go where</span>
+myPlot &lt;- myPlot + geom_point()             <span class="c"># the geometry: how to draw it</span>
+myPlot                                       <span class="c"># draw it</span>
+
+mpg %&gt;% ggplot() + aes(x = displ, y = hwy) + geom_point()   <span class="c"># same, in one line</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>mpg</dt><dd>A table that comes with ggplot2: fuel economy of 234 cars. <code>displ</code> is engine size and <code>hwy</code> is highway miles per gallon.</dd></div><div><dt>ggplot(data)</dt><dd>Starts a chart and says which data frame to use. On its own it draws an empty canvas.</dd></div><div><dt>aes()</dt><dd><b>Aes</b>thetics: which columns go on x, y, color, size and so on.</dd></div><div><dt>geom_point()</dt><dd>Draws the data as points (a scatter plot). Each <code>geom_</code> is a different way to draw.</dd></div><div><dt>+</dt><dd>Adds a layer to the chart. ggplot uses <code>+</code>, not the pipe.</dd></div></dl></div>
+    <p class="warn"><b>Trap:</b> pipes (<code>%&gt;%</code>) feed data <b>into</b> <code>ggplot()</code>; after that, layers are joined with <b>+</b>.</p>
+  </div>
+
+  <div class="card">
+    <h3>The plots from the lecture</h3>
+<pre><span class="c"># Histogram: one numeric variable</span>
+ggplot(mpg, aes(x = displ)) + geom_histogram(binwidth = 1)
+ggplot(mpg, aes(x = displ)) + geom_histogram(bins = 8, fill = "red", color = "black")
+
+<span class="c"># Box plot: a numeric variable across groups</span>
+ggplot(mpg, aes(x = class, y = displ)) + geom_boxplot()
+
+<span class="c"># Scatter with color mapped to a column</span>
+ggplot(mpg, aes(x = displ, y = hwy)) + geom_point(aes(color = cty))
+
+<span class="c"># One panel per year, with a fitted regression line</span>
+ggplot(mpg, aes(x = cty, y = hwy)) + geom_point() + facet_wrap(~year) + geom_smooth(method = "lm")
+
+<span class="c"># Bar chart from summarized data, rotated labels, sorted bars, title</span>
+mpg %&gt;% group_by(class) %&gt;% summarize(hwy = mean(hwy), displ = mean(displ)) %&gt;%
+  ggplot(aes(x = reorder(class, displ), y = hwy)) +
+  geom_col(aes(fill = displ)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Highway MPG by class of car")</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>binwidth / bins</dt><dd>Two ways to set histogram bars: <code>binwidth = 1</code> makes each bar 1 unit wide; <code>bins = 8</code> asks for 8 bars.</dd></div><div><dt>geom_boxplot()</dt><dd>Draws a box plot for each group on the x-axis.</dd></div><div><dt>facet_wrap(~year)</dt><dd>Makes one small panel per value of <code>year</code>. The <code>~</code> means “split by”.</dd></div><div><dt>geom_smooth(method = "lm")</dt><dd>Adds a fitted straight line (a linear model) through the points.</dd></div><div><dt>reorder(class, displ)</dt><dd>Puts the categories in order of another column, so the bars come out sorted.</dd></div><div><dt>geom_col()</dt><dd>Draws bars whose heights are a y value you already calculated.</dd></div><div><dt>theme(element_text())</dt><dd>Changes the look of chart text. <code>angle = 90</code> turns the x labels sideways.</dd></div><div><dt>ggtitle()</dt><dd>Adds a title.</dd></div></dl></div>
+    <ul>
+      <li><code>fill</code> is the inside color; <code>color</code> is the outline (or the point color).</li>
+      <li>A fixed color goes <b>outside</b> <code>aes()</code>: <code>geom_point(color = "red")</code>. A color driven by a column goes <b>inside</b>: <code>aes(color = cty)</code>.</li>
+      <li><code>geom_bar()</code> counts rows for you; <code>geom_col()</code> uses a y value you already computed.</li>
+      <li><code>reorder(class, displ)</code> sorts the bars by displ.</li>
+    </ul>
+    <div class="tbl"><table>
+      <thead><tr><th>Geom</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td><code>geom_histogram()</code></td><td>Distribution of one numeric variable</td></tr>
+        <tr><td><code>geom_col()</code> / <code>geom_bar()</code></td><td>Comparing categories</td></tr>
+        <tr><td><code>geom_line()</code></td><td>Change over time</td></tr>
+        <tr><td><code>geom_point()</code></td><td>Relationship between two numbers (scatter)</td></tr>
+        <tr><td><code>geom_jitter()</code></td><td>Points nudged a little so overlaps show</td></tr>
+        <tr><td><code>geom_boxplot()</code> / <code>geom_violin()</code></td><td>Distributions across groups (violin shows density)</td></tr>
+        <tr><td><code>geom_smooth()</code></td><td>A fitted line or curve</td></tr>
+      </tbody>
+    </table></div>
+    <p class="warn">There is no <code>geom_piechart()</code>. That's on purpose.</p>
+  </div>
+
+  <div class="card">
+    <h3>Line charts over time (HW 6)</h3>
+<pre>df$violation_date &lt;- as.Date(df$violation_date)   <span class="c"># text → Date</span>
+byDate &lt;- aggregate(number_violations ~ violation_date, data = df, sum)  <span class="c"># total per date</span>
+ggplot(byDate, aes(x = violation_date, y = number_violations)) +
+  geom_line(color = "blue") + ylim(0, 180) + xlab("Date") + ylab("Violations")</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>as.Date()</dt><dd>Converts text like "2024-03-15" into a real date, so R can sort it and space it correctly on an axis.</dd></div><div><dt>aggregate(y ~ g, data, f)</dt><dd>Base R: splits y by g and applies f to each group, returning a data frame. <code>~</code> reads as “by”.</dd></div><div><dt>geom_line()</dt><dd>Connects the points in x order with a line. Use it for change over time.</dd></div><div><dt>ylim() / xlab() / ylab()</dt><dd>Set the y-axis limits and the axis titles.</dd></div></dl></div>
+    <div class="sql"><b>SQL brain:</b> <code>aggregate(n ~ day, data = df, sum)</code> is <code>SELECT day, SUM(n) FROM df GROUP BY day</code>.</div>
+    <p class="warn">Check for missing values with <code>is.na()</code> first. HW 6 filled gaps in time-series data with <code>na_interpolation()</code> from imputeTS, which estimates each gap from its neighbors. That's why you sort the data first.</p>
+  </div>
+
+  <h3>Quiz · Week 6</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>Name the three parts every ggplot needs.</p>
+      <details><summary>Show answer</summary><div class="ans"><p><b>Data</b> (a data frame), <b>aesthetics</b> (<code>aes()</code>: x, y, color, fill, size) and <b>geometry</b> (a <code>geom_</code>).</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>Which visual encoding is easiest to read accurately, and which is hardest?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Easiest: <b>position on a common scale</b> (bar charts, scatter plots). Hardest: <b>shading or color saturation</b>.</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>Pick a chart: (a) monthly sales over 3 years; (b) height vs weight; (c) average price per brand; (d) salaries across departments.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>(a) line; (b) scatter; (c) bar; (d) box plot.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>Write a box plot of <code>displ</code> for each <code>class</code> in <code>mpg</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>ggplot(mpg, aes(x = class, y = displ)) + geom_boxplot()</pre></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>What does this return?</p><pre>s &lt;- data.frame(day = c("Mon", "Mon", "Tue"), n = c(2, 3, 4))
+aggregate(n ~ day, data = s, sum)</pre>
+      <details><summary>Show answer</summary><div class="ans"><pre>  day n
+1 Mon 5
+2 Tue 4</pre></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>In <code>geom_histogram(fill = "red", color = "black")</code>, what is red and what is black?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The bars are filled <b>red</b> with a <b>black</b> outline.</p></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 7 -->
+<section class="week" id="w7">
+  <div class="wk"><span class="n">Week 7</span><h2>Maps</h2></div>
+  <div class="terms">
+    <span class="term"><b>Latitude:</b> horizontal circles, 0 = equator, ±90 = poles</span>
+    <span class="term"><b>Longitude:</b> vertical half circles, 0 = Greenwich, US is negative</span>
+    <span class="term"><b>Projection:</b> sphere → flat; always distorts</span>
+    <span class="term"><b>Choropleth:</b> areas filled by a value</span>
+    <span class="term"><b>Geocoding:</b> address → lat/long</span>
+  </div>
+
+  <div class="card">
+    <h3>Mapping concepts</h3>
+    <ul>
+      <li>A data-based map needs at least <b>three fields</b>: <b>latitude</b>, <b>longitude</b>, and a <b>value</b> to show.</li>
+      <li>Small areas work like a flat grid; large areas need a <b>projection</b>, and every projection distorts something. <b>Mercator</b> (1569) keeps <b>direction</b>, which is good for navigation, but not distance or area, so Alaska and Greenland look huge.</li>
+      <li><b>Four kinds of spatial data:</b> <b>point</b> (x, y), <b>line</b> (connected points), <b>polygon</b> (an enclosed area) and <b>raster/grid</b> (a lattice of cells).</li>
+      <li><b>Vector</b> maps draw lines between points (shapefiles); <b>raster</b> maps are grids of pixels (tile maps). ggplot draws vector maps.</li>
+      <li>Any spatial object can carry <b>attributes</b>: a name, altitude, population and so on.</li>
+      <li>Geocoding APIs: Google Maps, OpenStreetMap (Nominatim).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Drawing the US</h3>
+<pre>states &lt;- map_data("state")
+head(states)
+<span class="c">#        long      lat group order  region subregion
+# 1 -87.46201 30.38968     1     1 alabama      &lt;NA&gt;</span>
+
+ggplot(states) + geom_point(aes(x = long, y = lat))                 <span class="c"># squashed: no projection</span>
+ggplot(states) + geom_point(aes(x = long, y = lat)) + coord_map()   <span class="c"># right shape</span>
+
+map.simple &lt;- ggplot(states) +
+  geom_polygon(aes(x = long, y = lat, group = group), color = "black", fill = "white") +
+  coord_map()
+map.simple + geom_point(aes(x = -76.1330, y = 43.0377), color = "#F76900")   <span class="c"># Syracuse</span>
+
+states %&gt;% filter(region == "new york") %&gt;% ggplot() + ...   <span class="c"># zoom to one state</span>
+ny_counties &lt;- map_data("county", "new york")                  <span class="c"># county outlines</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>map_data("state")</dt><dd>From ggplot2 (needs the maps package installed): returns a data frame of border points for every US state, one row per point.</dd></div><div><dt>coord_map()</dt><dd>Applies a map projection so the shapes aren't squashed. It needs the mapproj package.</dd></div><div><dt>geom_polygon()</dt><dd>Joins points into filled shapes. <code>group = group</code> keeps each state's points together.</dd></div><div><dt>"#F76900"</dt><dd>A color written as a hex code (here, Syracuse orange).</dd></div><div><dt>map.simple + …</dt><dd>A saved chart can be stored in a name and have more layers added later.</dd></div></dl></div>
+    <ul>
+      <li><b>group</b> = which points belong to the same shape. <b>order</b> = the order to connect them.</li>
+      <li>New York has several groups because Long Island and other pieces are separate polygons.</li>
+      <li><code>color =</code> is the border; <code>fill =</code> is the inside.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Choropleth: merge your data with the shapes</h3>
+<pre>usData &lt;- data.frame(stateName = state.name, area = state.area)
+usData$centerX &lt;- state.center$x
+usData$centerY &lt;- state.center$y
+usData$stateName &lt;- tolower(usData$stateName)       <span class="c"># map_data uses lowercase names</span>
+
+usDataWithGeom &lt;- merge(usData, states, by.x = "stateName", by.y = "region")
+usDataWithGeom &lt;- usDataWithGeom %&gt;% arrange(order)  <span class="c"># merge shuffles rows: put them back</span>
+
+ggplot(usDataWithGeom) +
+  geom_polygon(aes(x = long, y = lat, group = group, fill = area), color = "black") +
+  coord_map()
+
+<span class="c"># Or points sized and colored by a value, on a blank map</span>
+ggplot(usDataWithGeom) +
+  geom_polygon(aes(x = long, y = lat, group = group), color = "black", fill = "white") +
+  geom_point(aes(x = centerX, y = centerY, color = area, size = area)) +
+  coord_map()
+
+<span class="c"># Lab 7 version with a LEFT JOIN on differently named keys</span>
+mergeNY &lt;- ny_counties |&gt; left_join(nyData, by = c("subregion" = "county"))</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>state.area / state.center</dt><dd>Built-in vectors: each state's area, and the x/y coordinates of its center.</dd></div><div><dt>tolower()</dt><dd>Converts text to lowercase, so "New York" becomes "new york".</dd></div><div><dt>merge(a, b, by.x, by.y)</dt><dd>Base R join, like SQL <code>JOIN … ON a.stateName = b.region</code>. <code>by.x</code> and <code>by.y</code> name the key column in each table.</dd></div><div><dt>arrange(order)</dt><dd>Sorts rows by the map's <code>order</code> column, so each outline is drawn point by point in the right sequence.</dd></div><div><dt>left_join(a, b, by = c("x" = "y"))</dt><dd>dplyr's LEFT JOIN: keeps every row of the left table. The <code>by</code> part matches column x on the left with column y on the right.</dd></div></dl></div>
+    <p class="warn"><b>Two classic bugs:</b> (1) names don't match ("New York" vs "new york"), so the merge drops rows → use <code>tolower()</code>. (2) forgetting <code>arrange(order)</code> after the merge, so polygons are drawn in the wrong order and look like spaghetti.</p>
+    <p class="warn"><b>Bonus (raster maps):</b> <code>ggmap</code> with <code>get_stadiamap(bbox = bb, zoom = 4)</code> puts a tile image behind your layers. It needs an API key (<code>register_stadiamaps()</code>). A higher zoom means more detail and a slower download.</p>
+  </div>
+
+  <h3>Quiz · Week 7</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>What are the minimum three fields you need for a data-based map?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Latitude, longitude and a value (the data you want to show).</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>Name the four classes of spatial data.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Point, line, polygon and raster (grid).</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>What does Mercator preserve, and what does it distort?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>It preserves <b>direction</b> (angles), which is useful for navigation. It distorts <b>area and distance</b>, especially near the poles.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>Why call <code>tolower()</code> on state names before merging with <code>map_data("state")</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The <code>region</code> column in map_data is lowercase. "New York" won't match "new york", so those rows would be dropped by the merge.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>Fill in the blank to color each state by <code>pop</code>.</p><pre>ggplot(merged) +
+  geom_polygon(aes(x = long, y = lat, group = group, ______)) +
+  coord_map()</pre>
+      <details><summary>Show answer</summary><div class="ans"><p><code>fill = pop</code></p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>Your map looks squashed and too wide. What's missing?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>coord_map()</code>, which applies a map projection.</p></div></details></div>
+  </div>
+</section>
+
+<div class="band">
+  <span class="eyebrow">Part 3 · Weeks 8–10 (Week 10 is not on the exam)</span>
+  <h2>Linear models, machine learning and ethics</h2>
+</div>
+
+<!-- WEEK 8 -->
+<section class="week" id="w8">
+  <div class="wk"><span class="n">Week 8</span><h2>Machine learning overview and linear regression</h2></div>
+  <div class="terms">
+    <span class="term"><b>Supervised:</b> learn from labeled examples</span>
+    <span class="term"><b>Unsupervised:</b> no labels; clustering, association rules</span>
+    <span class="term"><b>Reinforcement:</b> trial and error with rewards</span>
+    <span class="term"><b>Classification:</b> predict a category</span>
+    <span class="term"><b>Regression:</b> predict a number</span>
+  </div>
+
+  <div class="card">
+    <h3>OSEMN in detail</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Phase</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>Obtain</td><td>Read files, query databases, pull from APIs, collect new data (surveys, sensors).</td></tr>
+        <tr><td>Scrub</td><td>Filter, extract, fix missing or illegal values, transform. <b>Often 50%+ of the work.</b></td></tr>
+        <tr><td>Explore</td><td>Plots, descriptive stats, outliers, <b>feature selection</b> (which variables matter).</td></tr>
+        <tr><td>Model</td><td>Supervised or unsupervised models; tune and compare them.</td></tr>
+        <tr><td>iNterpret</td><td>Draw conclusions, communicate, make insights actionable.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="two">
+      <div><span class="lbl">Traditional statistics</span><p>Confirms a hypothesis from theory; data are planned and clean; variables often normal.</p></div>
+      <div><span class="lbl">Data mining / data science</span><p>Exploratory, looking for "needles in haystacks"; messy data you didn't plan; mixed text, categories and numbers.</p></div>
+    </div>
+    <p><b>Machine learning</b> lets computers learn without being explicitly programmed. It's a part of AI.</p>
+  </div>
+
+  <div class="card">
+    <h3>Regression vocabulary</h3>
+    <div class="two">
+      <div><span class="lbl">Same thing, different names (y)</span><p>Dependent, outcome, response, predicted, target, criterion variable, regressand.</p></div>
+      <div><span class="lbl">Same thing, different names (x)</span><p>Independent, predictor, explanatory, input variable, feature, regressor.</p></div>
+    </div>
+    <ul>
+      <li><b>Equation:</b> ŷ = intercept + B₁X₁ + B₂X₂ + … (the 2D version is y = mx + b).</li>
+      <li><b>Coefficient:</b> "a one-unit change in X gives B units of change in Y", holding the others constant.</li>
+      <li><b>Least squares:</b> the best line is the one that makes the <b>squared prediction errors</b> as small as possible.</li>
+      <li>An index like "exam #1, #2" is a <b>label</b>, not a predictor.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>The oil-change example, line by line</h3>
+<pre>oil &lt;- data.frame(oilChanges, repairs, miles)        <span class="c"># 14 cars</span>
+lmOut &lt;- lm(repairs ~ oilChanges + miles, data = oil)
+summary(lmOut)
+<span class="c">#              Estimate   Std. Error  t value  Pr(&gt;|t|)
+# (Intercept)  35.716647  172.343530   0.207   0.83961
+# oilChanges  -57.256143    8.945717  -6.400   5.08e-05 ***
+# miles         0.005104    0.001377   3.706   0.00346  **
+# Multiple R-squared: 0.8828,  Adjusted R-squared: 0.8615
+# F-statistic: 41.44 on 2 and 11 DF,  p-value: 7.56e-06</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>oilChanges, repairs, miles</dt><dd>Three vectors from the lecture, one value per car (shown in full on the statistics page).</dd></div><div><dt>lm(y ~ x1 + x2, data)</dt><dd><b>L</b>inear <b>m</b>odel: fits a regression. Left of <code>~</code> is what you predict; the predictors go on the right, joined with <code>+</code>.</dd></div><div><dt>summary(model)</dt><dd>On a model, prints the full report: coefficients, p-values, R² and the F-test.</dd></div><div><dt>Pr(&gt;|t|)</dt><dd>The p-value for each predictor. Below 0.05 means significant.</dd></div><div><dt>5.08e-05</dt><dd>Scientific notation: 5.08 × 10<sup>−5</sup> = 0.0000508. Move the decimal point 5 places left.</dd></div></dl></div>
+    <ul>
+      <li><b>oilChanges −57.26, p &lt; 0.001:</b> significant. Each extra oil change goes with about <b>$57 less</b> in repairs, holding miles constant.</li>
+      <li><b>miles 0.0051, p = 0.003:</b> significant. Each extra mile adds about half a cent; 10,000 miles add about $51.</li>
+      <li><b>Intercept p = 0.84:</b> not significant, and usually not interpreted.</li>
+      <li><b>Adjusted R² 0.86:</b> the two predictors explain about 86% of the variation in repairs. Adjusted R² penalizes extra predictors, so use it to compare models.</li>
+      <li><b>F-statistic p-value 7.56e-06:</b> the <b>model as a whole</b> is significant.</li>
+      <li>Stars: <code>***</code> p &lt; 0.001, <code>**</code> &lt; 0.01, <code>*</code> &lt; 0.05, <code>.</code> &lt; 0.1.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Predicting and plotting</h3>
+<pre>oilPred &lt;- data.frame(oilChanges = c(1, 2), miles = c(10000, 20000))
+predict(lmOut, oilPred)          <span class="c"># 29.50  23.29</span>
+<span class="c"># by hand: 35.72 + (-57.26 × 2) + (0.005104 × 20000) = 23.29</span>
+
+lmOut1 &lt;- lm(repairs ~ oilChanges, data = oil)   <span class="c"># one predictor ("univariate")</span>
+plot(oil$oilChanges, oil$repairs); abline(lmOut1) <span class="c"># scatter + fitted line</span>
+ggplot(Boston, aes(x = rm, y = medv)) + geom_point() + geom_smooth(method = "lm")</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>predict(model, newdata)</dt><dd>Plugs new rows into the model's equation and returns the predicted values. The new data frame needs the same column names as the predictors.</dd></div><div><dt>plot(x, y)</dt><dd>Base R scatter plot.</dd></div><div><dt>abline(model)</dt><dd>Draws the model's fitted straight line on top of the last base R plot.</dd></div><div><dt>Boston</dt><dd>A housing data set from the MASS package: <code>rm</code> is rooms per home and <code>medv</code> is median home value.</dd></div></dl></div>
+    <p class="warn">The new data frame must use <b>the same column names</b> as the predictors in the model.</p>
+  </div>
+
+  <div class="card">
+    <h3>Is the model right? Questions to ask</h3>
+    <ul>
+      <li>Which vehicles does it apply to? What's missing (other maintenance, car age)?</li>
+      <li><b>Correlation is not causation.</b> The model shows a relationship, not that oil changes cause lower repairs.</li>
+      <li>The single-predictor model says "do as many oil changes as possible", but it ignores their <b>cost</b>. At $350 each, the total-cost model (<code>totalCost ~ oilChanges</code>) tells a different story.</li>
+    </ul>
+  </div>
+
+  <h3>Quiz · Week 8</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>Supervised, unsupervised or reinforcement? (a) grouping customers with no labels; (b) predicting house prices from past sales; (c) a game agent learning from rewards.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>(a) unsupervised; (b) supervised; (c) reinforcement.</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>Classification or regression? (a) "What will the temperature be tomorrow?" (b) "Will it be sunny, cloudy or rainy?"</p>
+      <details><summary>Show answer</summary><div class="ans"><p>(a) regression (a number); (b) classification (a category).</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>In <code>lm(medv ~ rm + crim + dis, data = Boston)</code>, name the dependent and independent variables.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Dependent: <code>medv</code>. Independent: <code>rm</code>, <code>crim</code>, <code>dis</code>.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>A model is ŷ = 10 + 2·x₁ − 0.5·x₂. Predict y when x₁ = 4 and x₂ = 6.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>10 + 8 − 3 = <b>15</b>.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>What's the difference between multiple R² and adjusted R²?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Both show the share of variation explained. Multiple R² always goes up when you add predictors; adjusted R² penalizes useless ones, so it's the fair way to compare models.</p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>Write code to predict <code>Price</code> for a 2,000 sq ft, 3-bedroom house from <code>m &lt;- lm(Price ~ SqFt + Bedrooms, data = house_df)</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>newHouse &lt;- data.frame(SqFt = 2000, Bedrooms = 3)
+predict(m, newHouse)</pre></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 9 -->
+<section class="week" id="w9">
+  <div class="wk"><span class="n">Week 9</span><h2>Supervised learning: trees, SVMs and evaluation</h2></div>
+  <div class="terms">
+    <span class="term"><b>Training set:</b> what the model learns from</span>
+    <span class="term"><b>Test set:</b> held back to check it</span>
+    <span class="term"><b>Overfitting:</b> learns the noise</span>
+    <span class="term"><b>Underfitting:</b> too simple</span>
+    <span class="term"><b>NIR:</b> accuracy of always guessing the biggest class</span>
+  </div>
+
+  <div class="card">
+    <h3>The modeling process</h3>
+    <ol>
+      <li>Train on a substantial number of labeled cases.</li>
+      <li>Test on data the model hasn't seen, which approximates real-world use.</li>
+      <li>Use the model to predict new cases where the outcome is unknown.</li>
+    </ol>
+    <p class="warn">Some models (like SVMs) are hard to explain to managers: they have nothing like a regression coefficient.</p>
+  </div>
+
+  <div class="card">
+    <h3>Decision trees (CART) on the Titanic</h3>
+<pre>library(rpart); library(rpart.plot)
+str(titanic)        <span class="c"># 2201 obs: Class, Sex, Age, Survived (all factors)</span>
+cartTree &lt;- rpart(Survived ~ ., data = titanic)    <span class="c"># "." = every other column</span>
+prp(cartTree, faclen = 0, cex = 0.8, extra = 1)     <span class="c"># draw the tree</span>
+
+predict(cartTree, newdata = titanic)                  <span class="c"># probabilities, e.g. 0.729</span>
+predict(cartTree, newdata = titanic, type = "class")  <span class="c"># labels: No / Yes</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>library(rpart); library(rpart.plot)</dt><dd>Load the tree package and its drawing package.</dd></div><div><dt>rpart(y ~ ., data)</dt><dd>Builds a decision tree. The dot means “use every other column as a predictor”.</dd></div><div><dt>prp()</dt><dd>Draws the tree. <code>faclen = 0</code> shows full category names, <code>cex</code> sets text size, <code>extra = 1</code> shows counts in each box.</dd></div><div><dt>type = "class"</dt><dd>Makes <code>predict()</code> return the predicted label instead of probabilities.</dd></div></dl></div>
+    <ul>
+      <li>CART = <b>Classification And Regression Trees</b>: it can predict categories or numbers.</li>
+      <li>It <b>splits</b> the data again and again on one predictor at a time, choosing splits that reduce <b>impurity</b> (Gini, entropy or squared error), so each group is more "pure" in the outcome.</li>
+      <li>The result is a readable chain of if/else rules.</li>
+    </ul>
+<pre>confMatrix &lt;- table(predictedSurvived, actualSurvived)
+<span class="c">#                  actual FALSE  TRUE
+# predicted FALSE         1470   441
+# predicted TRUE            20   270</span>
+sum(diag(confMatrix)) / sum(confMatrix)    <span class="c"># (1470 + 270) / 2201 = 0.79</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>table(pred, actual)</dt><dd>With two inputs, <code>table()</code> makes a cross-count: how many cases fall in each predicted/actual pair. That is the confusion matrix.</dd></div><div><dt>diag()</dt><dd>Takes the diagonal (top-left to bottom-right): the correct predictions.</dd></div><div><dt>sum(diag(m)) / sum(m)</dt><dd>Correct predictions divided by all predictions: the accuracy.</dd></div></dl></div>
+    <p class="warn">That 79% was measured on the <b>same data it trained on</b>, so it's too optimistic. That's why we split.</p>
+  </div>
+
+  <div class="card">
+    <h3>Train/test split with caret</h3>
+<pre>library(caret)
+set.seed(110)
+trainList &lt;- createDataPartition(y = titanic$Survived, p = 0.80, list = FALSE)
+trainSet &lt;- titanic[trainList, ]     <span class="c"># 80%</span>
+testSet  &lt;- titanic[-trainList, ]    <span class="c"># the other 20%</span>
+
+cartTree &lt;- rpart(Survived ~ ., data = trainSet)
+predictValues &lt;- predict(cartTree, newdata = testSet, type = "class")
+confusionMatrix(predictValues, testSet$Survived)    <span class="c"># Accuracy 0.795</span></pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>library(caret)</dt><dd>Loads caret, a package of tools for training and testing models.</dd></div><div><dt>createDataPartition(y, p, list)</dt><dd>Picks a random share <code>p</code> of the row numbers while keeping the classes of <code>y</code> in the same proportions.</dd></div><div><dt>df[trainList, ] / df[-trainList, ]</dt><dd>Rows whose numbers are in the list / all the other rows.</dd></div><div><dt>confusionMatrix(pred, actual)</dt><dd>caret: prints the confusion matrix plus accuracy, the No Information Rate and its p-value. Predictions go first.</dd></div></dl></div>
+    <ul>
+      <li><code>trainList</code> is a list of <b>row numbers</b>. <code>list = FALSE</code> returns them as a matrix you can use as a row index.</li>
+      <li><code>createDataPartition</code> keeps the outcome's class mix the same in both sets. Check it with <code>table(trainSet$Class)</code> and <code>table(testSet$Class)</code>.</li>
+      <li><code>train(Survived ~ ., data = trainSet, method = "rpart")</code> lets caret tune the tree. It uses <b>bootstrapped</b> resampling (25 reps) and picks the best <b>cp</b> (complexity parameter), which penalizes a tree for having too many splits.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Support vector machines</h3>
+    <ul>
+      <li>An SVM finds the boundary with the <b>widest margin</b> between classes.</li>
+      <li><b>Support vectors</b> are the hardest cases, sitting on the margin, "a cat groomed like a dog". They define the boundary.</li>
+      <li>The <b>kernel trick</b> maps data into more dimensions (2D → 3D) so a curved boundary becomes a flat one. <code>svmRadial</code> is a common kernel.</li>
+      <li>SVMs are <b>black boxes</b>, but they often predict better, which is why we use them.</li>
+    </ul>
+<pre>library(kernlab)
+mod1 &lt;- ksvm(Class ~ ., data = trainSet, C = 5, cross = 3, prob.model = TRUE)
+mod1                                   <span class="c"># shows training error and cross-validation error</span>
+svm_pred &lt;- predict(mod1, testSet)
+cm &lt;- table(svm_pred, testSet$Class)
+sum(diag(cm)) / sum(cm)
+
+<span class="c"># caret version, with the predictors standardized first</span>
+fit2 &lt;- train(Class ~ ., data = trainSet, method = "svmRadial", preProc = c("center", "scale"))</pre>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>library(kernlab)</dt><dd>Loads the package that has <code>ksvm()</code>.</dd></div><div><dt>ksvm(y ~ ., data, C, cross, prob.model)</dt><dd>Trains an SVM. <code>C</code> is the cost of mistakes, <code>cross = 3</code> runs 3-fold cross-validation, and <code>prob.model = TRUE</code> lets it give probabilities too.</dd></div><div><dt>mod1</dt><dd>Typing a model's name prints its summary, including the training error and the cross-validation error.</dd></div><div><dt>train(…, method = "svmRadial")</dt><dd>caret's general training function; <code>method</code> picks the model type. <code>preProc = c("center", "scale")</code> standardizes the predictors first.</dd></div></dl></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Cost C</th><th>Higher C</th><th>Lower C</th></tr></thead>
+      <tbody>
+        <tr><td>Mistakes allowed</td><td>Fewer</td><td>More</td></tr>
+        <tr><td>Margin</td><td>Smaller</td><td>Wider</td></tr>
+        <tr><td>Model</td><td>Specialized (risk of overfitting)</td><td>Generalized</td></tr>
+        <tr><td>Training error</td><td>Lower</td><td>Higher</td></tr>
+        <tr><td>Cross-validation error</td><td>Higher</td><td>Lower</td></tr>
+      </tbody>
+    </table></div>
+    <p class="warn"><b>Cross-validation error</b> is the best guess of real-world error. <code>cross = 3</code> splits the training data in 3, trains on 2 parts and tests on the third, three times.</p>
+  </div>
+
+  <div class="card">
+    <h3>Reading <code>confusionMatrix()</code> output</h3>
+<pre><span class="c">#           Reference
+# Prediction Bad Good
+#       Bad   10    3
+#       Good  50  137
+# Accuracy : 0.735
+# No Information Rate : 0.7
+# P-Value [Acc &gt; NIR] : 0.1579</span></pre>
+    <ul>
+      <li><b>Accuracy</b> = diagonal / total = (10 + 137) / 200 = 0.735.</li>
+      <li><b>NIR 0.7:</b> 140 of 200 test cases are "Good", so always guessing "Good" scores 70%.</li>
+      <li><b>P-Value [Acc &gt; NIR] 0.158:</b> above 0.05, so the model is <b>not significantly better</b> than guessing. On the Titanic test set (Acc 0.7955, NIR 0.6773, p = 2.4e-08), it <b>is</b>.</li>
+      <li><b>Sensitivity</b> = true positives / all real positives. Here, of 60 real "Bad" cases, only 10 were caught: 10 / 60 = 0.17.</li>
+    </ul>
+  </div>
+
+  <h3>Quiz · Week 9</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>What's the difference between <code>predict(tree, testSet)</code> and <code>predict(tree, testSet, type = "class")</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The first gives <b>probabilities</b> for each class; the second gives the <b>predicted label</b> (No or Yes).</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>Write code to split <code>df</code> into 70% training and 30% testing, balanced on <code>df$Class</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>set.seed(1)
+trainList &lt;- createDataPartition(y = df$Class, p = 0.70, list = FALSE)
+trainSet &lt;- df[trainList, ]
+testSet  &lt;- df[-trainList, ]</pre></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>From the Titanic matrix above (1470, 441, 20, 270), what's the No Information Rate?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Real "No" (FALSE) cases are 1470 + 20 = 1490 out of 2201, so NIR = <b>0.677</b>. The model's 0.79 beats it.</p></div></details></div>
+    <div class="q"><span class="num">Q4</span><p>Accuracy 0.735, NIR 0.70, P-Value [Acc &gt; NIR] 0.158. Is the model useful?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Not really. It's only 3.5 points above guessing, and p = 0.158 &gt; 0.05, so the gain isn't significant.</p></div></details></div>
+    <div class="q"><span class="num">Q5</span><p>What happens to the margin and to overfitting as you raise C in an SVM?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The margin gets <b>smaller</b> and the model gets more specialized: lower training error but a higher risk of <b>overfitting</b> (higher cross-validation error).</p></div></details></div>
+    <div class="q"><span class="num">Q6</span><p>Define overfitting and underfitting in one line each.</p>
+      <details><summary>Show answer</summary><div class="ans"><p><b>Overfitting:</b> the model learns the noise in the training data, so it fails on new data. <b>Underfitting:</b> the model is too simple to capture the real pattern.</p></div></details></div>
+  </div>
+</section>
+
+<!-- WEEK 10 -->
+<section class="week" id="w10">
+  <div class="wk"><span class="n">Week 10 · not on the midterm</span><h2>Ethics and unsupervised learning (preview)</h2></div>
+  <p class="warn">The official study guide lists <b>Weeks 1–9 only</b>, so skip this week when you study for the midterm. It stays here for Lab 10 and the final.</p>
+
+  <div class="card">
+    <h3>Ethical risks of supervised learning (HW 9, step N)</h3>
+    <ul>
+      <li><b>Biased training data:</b> a model trained on past decisions copies past discrimination (hiring, lending, policing).</li>
+      <li><b>Unequal accuracy:</b> a model can work well on average but badly for smaller groups.</li>
+      <li><b>Proxies:</b> removing race or gender doesn't help if ZIP code or name stands in for them.</li>
+      <li><b>Black boxes:</b> people can't challenge a decision nobody can explain (SVMs, deep learning).</li>
+      <li><b>Privacy and consent:</b> personal data used for purposes people never agreed to.</li>
+      <li><b>Feedback loops:</b> predictions change behavior, which then becomes new training data.</li>
+      <li><b>What helps:</b> check accuracy for each group, keep humans in the loop for decisions about people, document the data and model, and allow appeals.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Unsupervised learning</h3>
+    <ul>
+      <li><b>No labels.</b> The goal is to find structure, not to predict a known answer.</li>
+      <li><b>Clustering</b> (for example k-means) groups similar cases, such as customer segments.</li>
+      <li><b>Association rules</b> find "if X then Y" patterns in transactions, as in market basket analysis.</li>
+    </ul>
+    <p><b>Worked example.</b> Five shopping baskets: {chips, salsa}, {chips, salsa, soda}, {chips}, {soda}, {chips, salsa}. Rule: <b>chips → salsa</b>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Measure</th><th>Meaning</th><th>Here</th></tr></thead>
+      <tbody>
+        <tr><td>Support</td><td>Share of all baskets with both items</td><td>3 / 5 = 0.6</td></tr>
+        <tr><td>Confidence</td><td>Of baskets with chips, share that also have salsa</td><td>3 / 4 = 0.75</td></tr>
+        <tr><td>Lift</td><td>Confidence ÷ support of salsa alone; above 1 = stronger than chance</td><td>0.75 / 0.6 = 1.25</td></tr>
+      </tbody>
+    </table></div>
+    <div class="sql"><b>SQL brain:</b> support is <code>COUNT(baskets with both) / COUNT(*)</code>; confidence is the same count divided by <code>COUNT(baskets with chips)</code>.</div>
+  </div>
+
+  <h3>Quiz · Week 10</h3>
+  <div class="quiz">
+    <div class="q"><span class="num">Q1</span><p>Give two ethical risks of using supervised learning to make decisions about people.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Any two of: biased training data, unequal accuracy across groups, proxy variables, lack of explainability, privacy, feedback loops.</p></div></details></div>
+    <div class="q"><span class="num">Q2</span><p>A rule has lift 0.8. What does that mean?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The items appear together <b>less</b> often than chance would predict, so the rule isn't useful (lift above 1 is what you want).</p></div></details></div>
+  </div>
+</section>
+
+<!-- WRITE BY HAND -->
+<section id="byhand">
+  <span class="eyebrow">The exam asks you to write code on paper</span>
+  <h2>Write it by hand · 12 drills</h2>
+  <p class="lede">The study guide says you must write small snippets: vector and data frame changes and basic plots. Small syntax slips can still get partial credit, so focus on the right function and the right shape. Write each answer on paper before you open it.</p>
+  <p class="lede">Use this data frame for drills 1–8: <code>df &lt;- data.frame(name = c("A", "B", "C"), age = c(30, 20, 40))</code></p>
+  <div class="quiz">
+    <div class="q"><span class="num">H1</span><p>Add <code>1</code> to the end of <code>x &lt;- c(5, 3, 8)</code>, then remove the second element.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>x &lt;- c(x, 1)      <span class="c"># or x[4] &lt;- 1  →  5 3 8 1</span>
+x &lt;- x[-2]        <span class="c"># 5 8 1</span></pre></div></details></div>
+    <div class="q"><span class="num">H2</span><p>Show the names of everyone older than 25 (base R).</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>df[df$age &gt; 25, "name"]   <span class="c"># "A" "C"</span>
+df$name[df$age &gt; 25]      <span class="c"># same result</span></pre></div></details></div>
+    <div class="q"><span class="num">H3</span><p>Add a logical column <code>old</code> that is TRUE when age is over 25, then delete it.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>df$old &lt;- df$age &gt; 25
+df$old &lt;- NULL</pre></div></details></div>
+    <div class="q"><span class="num">H4</span><p>Sort <code>df</code> from oldest to youngest, in base R and in the tidyverse.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>df[order(-df$age), ]           <span class="c"># C 40, A 30, B 20</span>
+df %&gt;% arrange(desc(age))</pre></div></details></div>
+    <div class="q"><span class="num">H5</span><p>Add a new row for “D”, age 50.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>df &lt;- rbind(df, data.frame(name = "D", age = 50))
+nrow(df)   <span class="c"># 4</span></pre><p><code>rbind()</code> (<b>r</b>ow <b>bind</b>) stacks rows from two tables with the same columns, like SQL <code>INSERT</code>.</p></div></details></div>
+    <div class="q"><span class="num">H6</span><p>Keep only the rows with age over 25 and only the <code>name</code> column, with pipes.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>df %&gt;% filter(age &gt; 25) %&gt;% select(name)</pre></div></details></div>
+    <div class="q"><span class="num">H7</span><p>Write a function <code>sq</code> that returns the square of its input. What is <code>sq(1:3)</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>sq &lt;- function(v) {
+  return(v^2)
+}
+sq(1:3)   <span class="c"># 1 4 9</span></pre></div></details></div>
+    <div class="q"><span class="num">H8</span><p>Draw a histogram of <code>age</code> with ggplot2.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>ggplot(df, aes(x = age)) + geom_histogram(bins = 5)</pre><p>One numeric variable → histogram. <code>aes()</code> goes inside <code>ggplot()</code>, and layers join with <code>+</code>, not <code>%&gt;%</code>.</p></div></details></div>
+    <div class="q"><span class="num">H9</span><p>Using <code>mtcars</code>, draw a scatter plot of <code>wt</code> (x) against <code>mpg</code> (y), colored by <code>cyl</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>ggplot(mtcars, aes(x = wt, y = mpg, color = factor(cyl))) + geom_point()</pre></div></details></div>
+    <div class="q"><span class="num">H10</span><p>Using <code>mtcars</code>, give the mean <code>mpg</code> for each number of cylinders.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>mtcars %&gt;% group_by(cyl) %&gt;% summarize(avgMPG = mean(mpg))
+aggregate(mpg ~ cyl, data = mtcars, mean)   <span class="c"># base R version</span></pre></div></details></div>
+    <div class="q"><span class="num">H11 · Spot the error</span><p>Find the two mistakes.</p><pre>ggplot(mtcars, aes(x = wt, y = mpg)) %&gt;%
+  geom_point
+</pre>
+      <details><summary>Show answer</summary><div class="ans"><p>ggplot layers join with <code>+</code>, not <code>%&gt;%</code>, and <code>geom_point</code> needs parentheses: <code>+ geom_point()</code>.</p></div></details></div>
+    <div class="q"><span class="num">H12 · Spot the error</span><p>This is meant to predict mpg for a car that weighs 3. What goes wrong?</p><pre>model &lt;- lm(mpg ~ wt, data = mtcars)
+predict(model, wt = 3)</pre>
+      <details><summary>Show answer</summary><div class="ans"><p>There is no error message, which makes it sneaky. R ignores <code>wt = 3</code> and returns the 32 fitted values for the training cars. The fix is <code>predict(model, newdata = data.frame(wt = 3))</code>, which gives about 21.25.</p></div></details></div>
+  </div>
+</section>
+
+<!-- MOCK EXAM -->
+<section id="mock">
+  <span class="eyebrow">Practice under exam conditions</span>
+  <h2>Mock exam · 25 questions</h2>
+  <p class="lede">Set an 80-minute timer (the real exam length) and write your answers on paper first. Then reveal each answer and tick the box if you got it right. Your score is saved in this browser.</p>
+  <div class="quiz" data-quiz="mock">
+    <div class="q"><span class="num">1 · Concept</span><p>Name the five steps of OSEMN and the step that usually takes the most time.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Obtain, Scrub, Explore, Model, iNterpret. <b>Scrub</b> takes the most time, often 50% or more.</p><label class="got"><input type="checkbox" id="m1"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">2 · Output</span><p>What does this return?</p><pre>v &lt;- c(3, 6, 9, 12)
+v[-2]</pre>
+      <details><summary>Show answer</summary><div class="ans"><p><code>3 9 12</code></p><label class="got"><input type="checkbox" id="m2"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">3 · Output</span><p>What is <code>mode(c(1, TRUE, "x"))</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"character"</code></p><label class="got"><input type="checkbox" id="m3"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">4 · Output</span><p>What does this return?</p><pre>x &lt;- c(4, 8, 1, 6)
+x[x &gt; 5]
+sum(x &gt; 5)</pre>
+      <details><summary>Show answer</summary><div class="ans"><p><code>8 6</code>, then <code>2</code>.</p><label class="got"><input type="checkbox" id="m4"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">5 · Output</span><p>What is <code>order(c(8, 2, 5))</code>?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>2 3 1</code>: the smallest value is at position 2, then position 3, then position 1.</p><label class="got"><input type="checkbox" id="m5"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">6 · Output</span><p>Given:</p><pre>pets &lt;- data.frame(type = c("cat", "dog", "cat"), age = c(2, 5, 4))</pre><p>What does <code>pets %&gt;% group_by(type) %&gt;% summarize(avgAge = mean(age))</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>  type  avgAge
+1 cat        3
+2 dog        5</pre><label class="got"><input type="checkbox" id="m6"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">7 · Output</span><p>Using <code>pets</code>, what does <code>pets[pets$age &gt; 3, "type"]</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"dog" "cat"</code></p><label class="got"><input type="checkbox" id="m7"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">8 · Output</span><p>What does <code>f(5)</code> return, and what is <code>a</code> afterwards?</p><pre>a &lt;- 10
+f &lt;- function(a) { a + 1 }
+f(5)</pre>
+      <details><summary>Show answer</summary><div class="ans"><p><code>f(5)</code> returns <b>6</b>. The outside <code>a</code> is still <b>10</b>; the function's <code>a</code> only exists inside it.</p><label class="got"><input type="checkbox" id="m8"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">9 · Write code</span><p>Write a function <code>doubleIt</code> that takes a number and returns it times 2.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>doubleIt &lt;- function(x) {
+  x * 2
+}</pre><label class="got"><input type="checkbox" id="m9"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">10 · Write code</span><p>From <code>cars</code>, keep rows with <code>mpg &gt; 25</code>, sorted from highest to lowest <code>mpg</code>, using pipes.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>cars %&gt;% filter(mpg &gt; 25) %&gt;% arrange(desc(mpg))</pre><label class="got"><input type="checkbox" id="m10"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">11 · Write code</span><p>Show the mean <code>mpg</code> for each value of <code>cyl</code> in <code>mtcars</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>mtcars %&gt;% group_by(cyl) %&gt;% summarize(meanMpg = mean(mpg))</pre><p>The results are about 26.7, 19.7 and 15.1.</p><label class="got"><input type="checkbox" id="m11"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">12 · Concept</span><p>Explain the difference between descriptive and inferential statistics.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Descriptive statistics summarize the data you have (mean, sd). Inferential statistics generalize from a sample to the population, test hypotheses, or build predictive models.</p><label class="got"><input type="checkbox" id="m12"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">13 · Concept</span><p>Explain the Law of Large Numbers and the Central Limit Theorem, and the difference between them.</p>
+      <details><summary>Show answer</summary><div class="ans"><p><b>LLN:</b> more observations bring a sample statistic closer to the true value (accuracy). <b>CLT:</b> means of larger samples form a normal bell curve, even if the population isn't normal (shape).</p><label class="got"><input type="checkbox" id="m13"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">14 · Output</span><p>What does <code>quantile(1:100, c(0.25, 0.75))</code> return (roughly)?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>About <code>25.75</code> and <code>75.25</code>.</p><label class="got"><input type="checkbox" id="m14"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">15 · Concept</span><p>Your sampling distribution's 2.5% and 97.5% quantiles are 2,391 and 6,591. A mystery sample's mean is 2,276. What do you conclude, and why?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>It falls outside the central 95%, in the extreme zone, so we tentatively conclude it <b>did not come</b> from that population.</p><label class="got"><input type="checkbox" id="m15"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">16 · Write code</span><p>Fetch JSON from <code>myURL</code>, parse it, and store the nested table <code>data → stations</code> in <code>stations</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>apiResult &lt;- getURL(myURL)
+results &lt;- fromJSON(apiResult)
+stations &lt;- results$data$stations</pre><label class="got"><input type="checkbox" id="m16"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">17 · Output</span><p>What does <code>gsub("US", "X", c("US", "USA", "NY"))</code> return?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>"X" "XA" "NY"</code>. It replaces "US" inside "USA" too.</p><label class="got"><input type="checkbox" id="m17"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">18 · Write code</span><p>Write ggplot code for a histogram of <code>hwy</code> in <code>mpg</code> with 10 bins, white bars and black outlines.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>ggplot(mpg, aes(x = hwy)) + geom_histogram(bins = 10, fill = "white", color = "black")</pre><label class="got"><input type="checkbox" id="m18"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">19 · Concept</span><p>Give two principles of good visualization from the lecture.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Any two of: choose position-based encodings (bar, line, scatter); avoid 3D pie charts; keep it simple and cut clutter (Tufte); bars start at zero; choose sensible colors; don't use color as the only signal (accessibility, WCAG 1.4.1).</p><label class="got"><input type="checkbox" id="m19"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">20 · Concept</span><p>What does <code>merge(a, b, by = "id", all.x = TRUE)</code> do in SQL terms?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>A <b>LEFT JOIN</b> on <code>id</code>: every row of <code>a</code> is kept, with <code>NA</code> where <code>b</code> has no match.</p><label class="got"><input type="checkbox" id="m20"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">21 · Concept</span><p>When drawing a state map with <code>geom_polygon()</code>, why do you need <code>group = group</code>, and why <code>arrange(order)</code> after merging?</p>
+      <details><summary>Show answer</summary><div class="ans"><p><code>group</code> tells ggplot which points form the same shape. <code>merge()</code> shuffles the rows, and <code>arrange(order)</code> puts the outline points back in drawing order. Without either, you get criss-crossing lines.</p><label class="got"><input type="checkbox" id="m21"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">22 · Interpret</span><p>A model has adjusted R² = 0.42. A predictor has coefficient −3.1 and p = 0.20. Explain both.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The model explains about <b>42%</b> of the variation in the outcome. The predictor is <b>not significant</b> (p &gt; 0.05), so we can't trust its −3.1 effect.</p><label class="got"><input type="checkbox" id="m22"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">23 · Calculate</span><p>Using the oil model (intercept 35.72, oilChanges −57.26, miles 0.005104), predict repairs for 2 oil changes and 20,000 miles.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>35.72 − 114.51 + 102.08 ≈ <b>$23.29</b>.</p><label class="got"><input type="checkbox" id="m23"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">24 · Calculate</span><p>Compute the accuracy, compare it with an NIR of 0.75, and compute the sensitivity for "Yes".</p><pre>        actual
+pred     No  Yes
+  No     60   15
+  Yes     5   20</pre>
+      <details><summary>Show answer</summary><div class="ans"><p>Accuracy = (60 + 20) / 100 = <b>0.80</b>, which beats 0.75 by 5 points. Sensitivity for "Yes" = 20 / (20 + 15) = <b>0.57</b>: it misses 15 of the 35 real "Yes" cases.</p><label class="got"><input type="checkbox" id="m24"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">25 · Concept</span><p>In <code>ksvm()</code> output, why is the cross-validation error a better guide than the training error? And what happens if you raise C?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>Training error is measured on data the model learned from, so it's too optimistic; cross-validation tests on held-out parts. Raising C allows fewer mistakes and gives a smaller margin: training error drops, but the model can overfit.</p><label class="got"><input type="checkbox" id="m25"> I got it right</label></div></details></div>
+  </div>
+  <div class="score" id="score" aria-live="polite">Mock score: <span id="scoreNum">0</span> / 25</div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section id="cheat">
+  <span class="eyebrow">Last look before the exam</span>
+  <h2>Cheat sheet</h2>
+  <div class="cheat">
+    <div class="card"><h3>Vectors</h3><p><code>c()</code> <code>1:10</code> <code>x[2]</code> <code>x[-1]</code> <code>x[x &gt; 5]</code> <code>length()</code> <code>mode()</code> <code>sum()</code> <code>mean()</code> <code>range()</code> <code>sort()</code> <code>order()</code> <code>which.max()</code> <code>which.min()</code> <code>is.na()</code> <code>na.rm = TRUE</code></p></div>
+    <div class="card"><h3>Look at data</h3><p><code>str()</code> <code>glimpse()</code> <code>summary()</code> <code>head()</code> <code>tail()</code> <code>nrow()</code> <code>dim()</code> <code>colnames()</code> <code>table()</code> <code>View()</code></p></div>
+    <div class="card"><h3>Pick and shape</h3><p><code>df[r, c]</code> <code>df$col</code> <code>select()</code> <code>filter()</code> <code>arrange(desc())</code> <code>slice()</code> <code>mutate()</code> <code>rename(new = old)</code> <code>add_column()</code> <code>pull()</code> <code>group_by()</code> <code>summarize()</code> <code>aggregate()</code> <code>ifelse()</code></p></div>
+    <div class="card"><h3>Text and types</h3><p><code>paste0()</code> <code>gsub()</code> <code>str_replace()</code> <code>tolower()</code> <code>as.numeric()</code> <code>as.Date()</code> <code>factor()</code></p></div>
+    <div class="card"><h3>Statistics</h3><p><code>median()</code> <code>sd()</code> <code>var()</code> <code>quantile()</code> <code>hist()</code> <code>rnorm()</code> <code>rbinom()</code> <code>sample(replace = TRUE)</code> <code>replicate()</code> <code>set.seed()</code></p></div>
+    <div class="card"><h3>Import</h3><p><code>read_csv()</code> <code>read_excel()</code> <code>download.file()</code> <code>getURL()</code> <code>fromJSON()</code> <code>merge()</code> <code>left_join()</code></p></div>
+    <div class="card"><h3>Charts</h3><p><code>ggplot(df, aes())</code> <code>geom_point()</code> <code>geom_histogram(bins)</code> <code>geom_col()</code> <code>geom_bar()</code> <code>geom_boxplot()</code> <code>geom_line()</code> <code>geom_smooth(method = "lm")</code> <code>facet_wrap(~x)</code> <code>reorder()</code> <code>ggtitle()</code> <code>ylim()</code></p></div>
+    <div class="card"><h3>Maps</h3><p><code>map_data("state")</code> <code>geom_polygon(group = group)</code> <code>coord_map()</code> <code>aes(fill = value)</code> <code>arrange(order)</code> <code>state.name</code> <code>state.center</code></p></div>
+    <div class="card"><h3>Models</h3><p><code>lm(y ~ x1 + x2, data)</code> <code>summary()</code> <code>predict(m, newDF)</code> <code>createDataPartition(list = FALSE)</code> <code>rpart()</code> <code>prp()</code> <code>type = "class"</code> <code>ksvm(C, cross)</code> <code>train(method)</code> <code>table(pred, actual)</code> <code>sum(diag(cm)) / sum(cm)</code> <code>confusionMatrix()</code></p></div>
+  </div>
+  <div class="card">
+    <h3>The ten traps</h3>
+    <ol>
+      <li>R counts from <b>1</b>; a minus index <b>drops</b>.</li>
+      <li>One string makes the whole vector <b>character</b>.</li>
+      <li><code>mode()</code> gives the <b>type</b>, not the most common value.</li>
+      <li><code>order()</code> gives <b>positions</b>; <code>sort()</code> gives values.</li>
+      <li><code>|&gt;</code> needs <b>parentheses</b>: <code>x |&gt; min()</code>.</li>
+      <li><code>filter()</code> and <code>slice()</code> <b>renumber</b> rows; base R brackets keep the old labels.</li>
+      <li><code>summarize</code> collapses groups; <code>mutate</code> after <code>group_by</code> keeps every row.</li>
+      <li><code>NA</code> spreads: use <code>na.rm = TRUE</code>.</li>
+      <li>Maps: <code>group = group</code>, <code>coord_map()</code>, <code>tolower()</code> before the merge, <code>arrange(order)</code> after.</li>
+      <li>Accuracy means nothing until you compare it with the <b>No Information Rate</b>.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h3>Exam-day tips</h3>
+    <ul>
+      <li>For "what does this return" questions, <b>trace the code line by line on scrap paper</b>, writing down each variable's value.</li>
+      <li>On interpretation questions, give the <b>direction and size</b> of the effect and say whether it's <b>significant</b>.</li>
+      <li>If you blank on syntax, write the steps in plain English. Partial credit is real.</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var KEY = "ist387-mock-v2";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('[data-quiz="mock"] .got input'));
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e) { saved = {}; }
+  function update(){
+    var n = boxes.filter(function(b){ return b.checked; }).length;
+    document.getElementById("scoreNum").textContent = n;
+  }
+  boxes.forEach(function(b){
+    if (saved[b.id]) b.checked = true;
+    b.addEventListener("change", function(){
+      saved[b.id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch(e) {}
+      update();
+    });
+  });
+  update();
+})();
+</script>
+
+</html>

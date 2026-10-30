@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IST 387 Statistics</title>
+<meta name="author" content="Naim Bin Hasan">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; each idea is a lesson block with a plain-words line, R code, and a worked number line. Mean is amber, median is teal everywhere. */
+:root{
+  --paper:#F5F7F4; --sheet:#FFFFFF; --ink:#1A2421; --soft:#56635E; --rule:#D8DFDA;
+  --teal:#0E6B66; --teal-soft:#E2F0EE; --amber:#B4650A; --amber-soft:#FBEFDD; --code:#EDF1EE;
+  --warn:#9A3B26; --warn-soft:#F8E8E3;
+  --f-display:"Familjen Grotesk","Avenir Next",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111816; --sheet:#18211E; --ink:#E4EBE7; --soft:#9AA9A3; --rule:#2A3632;
+  --teal:#5CC2B9; --teal-soft:#16302D; --amber:#F0A54A; --amber-soft:#33261A; --code:#1E2926;
+  --warn:#F08F78; --warn-soft:#35201B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111816; --sheet:#18211E; --ink:#E4EBE7; --soft:#9AA9A3; --rule:#2A3632;
+  --teal:#5CC2B9; --teal-soft:#16302D; --amber:#F0A54A; --amber-soft:#33261A; --code:#1E2926;
+  --warn:#F08F78; --warn-soft:#35201B; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,3rem);letter-spacing:-0.02em}
+h2{font-size:1.7rem;letter-spacing:-0.01em}
+h3{font-size:1.15rem}
+p{margin:0;max-width:66ch}
+a{color:var(--teal)}
+code{font-family:var(--f-mono);font-size:0.86em;background:var(--code);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--f-mono);font-size:0.84rem;line-height:1.6;background:var(--code);border:1px solid var(--rule);border-radius:8px;padding:12px 14px;margin:0;overflow-x:auto}
+pre .c{color:var(--soft)}
+.mean{color:var(--amber)} .med{color:var(--teal)}
+b.mean,b.med{font-weight:700}
+
+nav.jump{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);
+  margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px))}
+nav.jump .row{max-width:760px;margin:0 auto;display:flex;gap:6px;overflow-x:auto}
+nav.jump a{flex:none;text-decoration:none;color:var(--ink);font-size:0.86rem;padding:4px 11px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet)}
+nav.jump a:hover,nav.jump a:focus-visible{border-color:var(--teal);color:var(--teal);outline:none}
+
+header{padding-top:36px;display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-family:var(--f-mono);font-size:0.76rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal)}
+.byline{font-size:0.92rem;font-weight:600;margin:0}
+.lede{color:var(--soft);font-size:1.06rem}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.q3{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.q3 span{font-family:var(--f-mono);font-size:0.74rem;color:var(--soft);text-transform:uppercase;letter-spacing:0.06em}
+.q3 b{font-family:var(--f-display);font-size:1.1rem}
+
+section{display:flex;flex-direction:column;gap:16px;scroll-margin-top:64px}
+.num{font-family:var(--f-mono);font-size:0.8rem;color:var(--soft)}
+.plain{border-left:3px solid var(--teal);padding:4px 0 4px 14px;font-size:1.05rem}
+.trap{background:var(--warn-soft);border-radius:8px;padding:10px 14px;color:var(--ink)}
+.trap b:first-child{color:var(--warn)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:0.92rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--f-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--soft);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.r{text-align:right}
+.figure{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:14px;overflow-x:auto}
+.figure svg{display:block;width:100%;min-width:520px;height:auto}
+.cap{font-size:0.88rem;color:var(--soft)}
+svg .grid{stroke:var(--rule);stroke-width:1}
+svg .tick{fill:var(--soft);font-family:var(--f-mono);font-size:11px}
+svg .axis{fill:var(--soft);font-family:var(--f-body);font-size:12px}
+svg .lab{fill:var(--ink);font-family:var(--f-mono);font-size:11px;font-weight:600}
+svg .lab.mean{fill:var(--amber)} svg .lab.med{fill:var(--teal)}
+svg .bar{fill:var(--teal);opacity:0.35}
+svg .mk{stroke-width:2.5;fill:none} svg .mk.mean{stroke:var(--amber)} svg .mk.med{stroke:var(--teal)}
+svg .box{fill:var(--teal-soft);stroke:var(--teal);stroke-width:1.5}
+svg .wh{stroke:var(--soft);stroke-width:1.5}
+svg .out{fill:var(--sheet);stroke:var(--warn);stroke-width:2}
+svg .dot{fill:var(--ink);opacity:0.75}
+svg .band95{fill:var(--teal-soft)}
+svg .cut{stroke:var(--teal);stroke-width:1.5;stroke-dasharray:4 3}
+svg .mk.out2{stroke:var(--warn)} svg .outf{fill:var(--warn)} svg .lab.warnt{fill:var(--warn)}
+.new{border:1px dashed var(--teal);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--teal-soft)}
+.newh{font-family:var(--f-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--teal);font-weight:600}
+.new dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.new dl div{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;gap:12px;align-items:baseline}
+.new dt{font-family:var(--f-mono);font-size:0.86rem;font-weight:600;white-space:nowrap}
+.new dd{margin:0;min-width:0;font-size:0.95rem}
+@media (max-width:560px){.new dl div{grid-template-columns:1fr;gap:0}}
+.why{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.why h3{font-size:1.05rem;color:var(--teal)}
+.why dl{margin:0;display:flex;flex-direction:column;gap:8px}
+.why dl div{display:grid;grid-template-columns:8.5rem 1fr;gap:12px}
+.why dt{font-family:var(--f-mono);font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--soft);padding-top:3px}
+.why dd{margin:0;min-width:0}
+@media (max-width:560px){.why dl div{grid-template-columns:1fr;gap:2px}}
+.part{border-top:3px solid var(--ink);padding-top:16px;display:flex;flex-direction:column;gap:8px;scroll-margin-top:64px}
+.part h2{font-size:2rem}
+
+/* playground */
+.play{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.play label{font-weight:700}
+.play input{width:100%;font-family:var(--f-mono);font-size:1rem;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)}
+.play input:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font-family:var(--f-mono);font-size:0.8rem;padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
+.chips button:hover,.chips button:focus-visible{border-color:var(--teal);color:var(--teal);outline:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.st{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;min-width:0}
+.st span{display:block;font-family:var(--f-mono);font-size:0.74rem;color:var(--soft)}
+.st b{font-family:var(--f-mono);font-size:1.05rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.st.mean b{color:var(--amber)} .st.med b{color:var(--teal)}
+.err{color:var(--warn);font-size:0.92rem}
+#dots svg{display:block;width:100%;height:auto}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:10px}
+.qq{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+summary{cursor:pointer;font-weight:700;color:var(--teal);font-size:0.92rem}
+summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px}
+details .a{padding-top:8px;display:flex;flex-direction:column;gap:6px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<nav class="jump" aria-label="Jump to section"><div class="row">
+  <a href="#partA">A · Describe</a><a href="#try">Try it</a><a href="#center">Center</a><a href="#spread">Spread</a><a href="#quantiles">Quantiles</a><a href="#shape">Shape</a><a href="#counts">Categories</a><a href="#groups">By group</a>
+  <a href="#partB">B · Sampling</a><a href="#lln">LLN</a><a href="#clt">CLT</a><a href="#mystery">Mystery sample</a>
+  <a href="#partC">C · Models</a><a href="#lmout">lm output</a><a href="#accuracy">Accuracy</a><a href="#fit">Overfitting</a>
+  <a href="#cheat">Cheat sheet</a><a href="#quiz">Quiz</a>
+</div></nav>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">IST 387 · Weeks 1–9 · Every statistic in the course</span>
+  <h1>Statistics in R, in plain words</h1>
+  <p class="byline">By Naim Bin Hasan</p>
+  <p class="lede">All the statistics the midterm covers, in three parts. <a href="#partA">Part A</a> describes the data you have (Week 3). <a href="#partB">Part B</a> uses samples to learn about a population (Weeks 4–5). <a href="#partC">Part C</a> measures how good a model is (Weeks 8–9).</p>
+  <p class="lede">Descriptive statistics answer three questions about a pile of numbers, and R has a short function for each answer.</p>
+  <div class="three">
+    <div class="q3"><span>Center</span><b>What is typical?</b><p class="cap">mean, median, mode</p></div>
+    <div class="q3"><span>Spread</span><b>How far apart are they?</b><p class="cap">range, variance, standard deviation, IQR</p></div>
+    <div class="q3"><span>Shape</span><b>What does the pile look like?</b><p class="cap">histogram, box plot, skew</p></div>
+  </div>
+  <p class="cap">Every output on this page was checked in R. Most functions are base R; the few that need a package say so.</p>
+</header>
+
+<div class="part" id="partA">
+  <span class="eyebrow">Part A · Week 3</span>
+  <h2>Describing data</h2>
+  <p>Descriptive statistics summarize the data you actually have. They don't predict anything.</p>
+</div>
+
+<!-- PLAYGROUND -->
+<section id="try">
+  <span class="num">Try it</span>
+  <h2>Type some numbers and watch the stats change</h2>
+  <p>This box works like R. It uses the same formulas, so the results match what R prints. Each box shows the R function that gives that number; don't worry if they are new, every one is explained in the sections below. Try adding one huge number and see which stats jump and which barely move.</p>
+  <div class="play">
+    <label for="nums">Your numbers (separated by commas)</label>
+    <input id="nums" type="text" inputmode="decimal" value="0, 0, 0, 2, 3, 4, 5" autocomplete="off" spellcheck="false">
+    <div class="chips" aria-label="Load an example">
+      <button type="button" data-v="0, 0, 0, 2, 3, 4, 5">Lecture example</button>
+      <button type="button" data-v="30, 32, 35, 38, 40, 400">Salaries with one boss</button>
+      <button type="button" data-v="2, 5, 5">Truck group A</button>
+      <button type="button" data-v="1, 3, 8">Truck group B</button>
+      <button type="button" data-v="5, 5, 5">All the same</button>
+    </div>
+    <div id="dots" aria-hidden="true"></div>
+    <p id="err" class="err" hidden></p>
+    <div class="stats" id="stats"></div>
+    <pre id="rcode" aria-label="The same thing in R"></pre>
+  </div>
+</section>
+
+<!-- CENTER -->
+<section id="center">
+  <span class="num">1 · Center</span>
+  <h2>Mean, median and mode: what is typical?</h2>
+  <p class="plain">The <b class="mean">mean</b> is the average. The <b class="med">median</b> is the middle value after sorting. The <b>mode</b> is the value that shows up most often.</p>
+  <p>The lecture uses these seven numbers: <code>0, 0, 0, 2, 3, 4, 5</code>.</p>
+<pre>x &lt;- c(0, 0, 0, 2, 3, 4, 5)
+
+mean(x)      <span class="c"># 2      add them up (14), divide by how many (7)</span>
+median(x)    <span class="c"># 2      sorted, the 4th of 7 values is in the middle</span>
+mode(x)      <span class="c"># "numeric"   NOT the mode! see the trap below</span>
+
+table(x)                    <span class="c"># counts: 0 appears 3 times, the rest once</span>
+names(which.max(table(x)))  <span class="c"># "0"    this is the real mode</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>x &lt;- …</dt><dd><code>&lt;-</code> stores a value in a name, like <code>$x = …</code> in PHP. Read it as “x gets”.</dd></div><div><dt>c()</dt><dd><b>c</b>ombine: joins values into one vector (R's simple list of same-type values). <code>c(0, 0, 0, 2, 3, 4, 5)</code> is a vector of 7 numbers.</dd></div><div><dt># …</dt><dd>Everything after <code>#</code> on a line is a comment. R ignores it.</dd></div><div><dt>mean(x)</dt><dd>Adds the values and divides by how many there are.</dd></div><div><dt>median(x)</dt><dd>Sorts the values and returns the middle one.</dd></div><div><dt>mode(x)</dt><dd>Despite the name, it returns the <b>data type</b> of x ("numeric", "character"). It does not find the most common value.</dd></div><div><dt>table(x)</dt><dd>Counts how many times each value appears, like counting votes. It prints two rows: the values on top and their counts underneath. Same as SQL <code>SELECT x, COUNT(*) … GROUP BY x</code>.</dd></div><div><dt>which.max()</dt><dd>Finds the <b>position</b> of the biggest number. On a table it also shows that position's label (the value), so you see two lines: the label on top and the position under it.</dd></div><div><dt>names()</dt><dd>Returns just the labels of something, dropping the numbers. Here it keeps the label of the biggest count, which is the mode. Labels are text, so you get <code>"0"</code> in quotes.</dd></div></dl></div>
+  <p>Read the last line from the inside out: <code>table(x)</code> counts each value (0 appears 3 times, the others once), then <code>which.max()</code> finds the biggest count (the 3, under the label 0), then <code>names()</code> reads off that label, <code>"0"</code>.</p>
+  <div class="trap"><b>Trap:</b> R has no built-in function for the statistical mode. <code>mode(x)</code> tells you the data <b>type</b> ("numeric", "character"). The lecture shows exactly this surprise. To find the most common value, count with <code>table()</code> and take the biggest with <code>which.max()</code>. The answer comes back as text, "0".</div>
+  <p>With an even number of values, the median is the average of the two middle ones: <code>median(c(1, 2, 3, 10))</code> is <code>2.5</code>.</p>
+
+  <div class="why"><h3>Mean</h3><dl><div><dt>What it's for</dt><dd>Gives one number that stands for the whole group, so you can compare groups quickly (“cars with 4 cylinders average 26.7 mpg, cars with 8 average 15.1”).</dd></div><div><dt>How it works</dt><dd>Add every value and divide by how many there are. Think of it as the balance point: if the values were weights on a ruler, the mean is where the ruler balances. That is also why one very heavy weight far out (an outlier) shifts it a lot.</dd></div><div><dt>Use it when</dt><dd>The data is roughly symmetric with no extreme values, like heights, test scores or temperatures. It is also the input for the sd, the CLT and regression, so it is the stat you will use most.</dd></div><div><dt>Real example</dt><dd>Average daily temperature by month in <code>airquality</code>.</dd></div></dl></div>
+  <div class="why"><h3>Median</h3><dl><div><dt>What it's for</dt><dd>Gives the value of the “typical” case when a few extreme values would mislead the mean.</dd></div><div><dt>How it works</dt><dd>Sort the values and take the one in the middle, so half are below it and half are above. It only cares about order, not size: if the richest person doubles their salary, the median does not move at all.</dd></div><div><dt>Use it when</dt><dd>The data is skewed or has outliers: incomes, house prices, populations, waiting times. If the mean and median are far apart, report the median and say the data is skewed.</dd></div><div><dt>Real example</dt><dd>State populations: the mean is 4,246 but the median is 2,838, because a few huge states pull the mean up. Most states are closer to 2,838.</dd></div></dl></div>
+  <div class="why"><h3>Mode</h3><dl><div><dt>What it's for</dt><dd>Tells you the most common value or category, which is the only kind of “average” that works for text and categories.</dd></div><div><dt>How it works</dt><dd>Count how often each value appears and pick the biggest count. In R that is <code>table()</code> to count and <code>which.max()</code> to pick. Data can have two modes (bimodal) or none (every value once).</dd></div><div><dt>Use it when</dt><dd>The data is categorical (the most common car brand, the most common answer on a survey) or a few repeated numbers (the most common shoe size a store should stock). For continuous numbers like 4.137 and 4.139 the mode is rarely useful, because values seldom repeat exactly.</dd></div><div><dt>Real example</dt><dd><code>table(mtcars$cyl)</code>: 8 cylinders is the mode (14 cars). A shop would ask for the mode, not the mean, to know which size to order most.</dd></div></dl></div>
+  <h3>Why have two kinds of average?</h3>
+  <p>Six people earn these salaries, in thousands. The last one is the boss.</p>
+<pre>salary &lt;- c(30, 32, 35, 38, 40, 400)
+mean(salary)     <span class="c"># 95.83   pulled up by one person</span>
+median(salary)   <span class="c"># 36.5    still looks like a normal salary</span></pre>
+  <p class="plain">One extreme value (an <b>outlier</b>) drags the <b class="mean">mean</b> toward it. The <b class="med">median</b> barely moves. When data has outliers or a long tail, the median describes "typical" better. That's why news reports use median income.</p>
+</section>
+
+<!-- SPREAD -->
+<section id="spread">
+  <span class="num">2 · Spread (dispersion)</span>
+  <h2>Range, variance and standard deviation: how far apart?</h2>
+  <p>Two groups can have the same mean and still be very different. The lecture's truck example: you must pick a truck for one container, either a 10-ton or a 7-ton truck.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Group</th><th>Containers (tons)</th><th>Mean</th><th>Range</th><th>sd()</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>2, 5, 5</td><td class="r">4</td><td class="r">3</td><td class="r">1.73</td></tr>
+      <tr><td>B</td><td>1, 3, 8</td><td class="r">4</td><td class="r">7</td><td class="r">3.61</td></tr>
+    </tbody>
+  </table></div>
+  <p>Both means are 4, but group B has an 8-ton container, so a 7-ton truck can't be used for it. The mean alone hides that. Spread tells you how risky "typical" is.</p>
+
+  <div class="why"><h3>Range</h3><dl><div><dt>What it's for</dt><dd>Shows the full stretch of the data from the lowest to the highest value.</dd></div><div><dt>How it works</dt><dd>Max minus min. It uses only two values, so a single outlier changes it completely.</dd></div><div><dt>Use it when</dt><dd>You need a quick sense of the limits (“prices run from $5 to $90”) or you are checking for typos, like a person aged 250.</dd></div></dl></div>
+  <h3>The five steps, worked by hand</h3>
+  <p>The lecture builds the standard deviation in steps. Here is <code>x &lt;- c(0, 0, 0, 2, 3, 4, 5)</code>, whose mean is 2.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Step</th><th>What you do</th><th>For x</th><th>In R</th></tr></thead>
+    <tbody>
+      <tr><td>1. Range</td><td>Biggest minus smallest</td><td>5 − 0 = 5</td><td><code>range(x)</code> gives <code>0 5</code>; <code>diff(range(x))</code> gives <code>5</code></td></tr>
+      <tr><td>2. Deviations</td><td>Each value minus the mean</td><td>−2 −2 −2 0 1 2 3</td><td><code>x - mean(x)</code></td></tr>
+      <tr><td>3. Sum of squares</td><td>Square each deviation, add them up</td><td>4+4+4+0+1+4+9 = 26</td><td><code>sum((x - mean(x))^2)</code></td></tr>
+      <tr><td>4. Variance</td><td>The average squared deviation</td><td>26 ÷ 6 = 4.33</td><td><code>var(x)</code></td></tr>
+      <tr><td>5. Standard deviation</td><td>Square root of the variance</td><td>√4.33 = 2.08</td><td><code>sd(x)</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>range(x)</dt><dd>Returns two numbers: the smallest and the biggest.</dd></div><div><dt>diff()</dt><dd>Subtracts each number from the next one. On the two numbers from <code>range()</code>, it gives max − min.</dd></div><div><dt>x - mean(x)</dt><dd>Vector math: R subtracts the mean from <b>every</b> value at once, no loop needed. You get 7 deviations.</dd></div><div><dt>^2</dt><dd>To the power of 2 (squared). <code>(x - mean(x))^2</code> squares all 7 deviations at once.</dd></div><div><dt>sum()</dt><dd>Adds up all the values.</dd></div><div><dt>var(x)</dt><dd>Variance: the sum of squared deviations divided by n − 1.</dd></div><div><dt>sd(x)</dt><dd>Standard deviation: the square root of the variance.</dd></div></dl></div>
+  <div class="trap"><b>Why divide by 6, not 7?</b> R's <code>var()</code> and <code>sd()</code> treat your data as a <b>sample</b> and divide by n − 1. The lecture's population formula divides by n, which gives 26 ÷ 7 = 3.71. If an exam question asks what <code>var(x)</code> prints, use n − 1.</div>
+  <ul>
+    <li><b>Why square?</b> The plain deviations always add up to 0 (−6 + 6), so you can't average them. Squaring makes every distance positive.</li>
+    <li><b>Why use sd instead of variance?</b> Variance is in squared units ("14 squared inches"), which nobody can picture. The sd is back in the original units ("3.7 inches"). The lecture asks which works better, and the answer is the sd.</li>
+    <li>If every value is the same, nothing is spread out: <code>sd(c(5, 5, 5))</code> is <code>0</code>.</li>
+  </ul>
+  <div class="why"><h3>Variance and standard deviation</h3><dl><div><dt>What it's for</dt><dd>Measure how far the values typically sit from the mean, so you know how much to trust “typical”. A small sd means most values are close to the mean; a large sd means they are scattered.</dd></div><div><dt>How it works</dt><dd>Find each value's distance from the mean, square the distances so negatives don't cancel positives, average them (that's the variance), then take the square root to get back to the original units (that's the sd). Every value counts, so outliers raise the sd a lot.</dd></div><div><dt>Use it when</dt><dd>You want to compare consistency (two machines both fill 500 g bags on average, but which one is steadier?) or judge whether a value is unusual. For a bell-shaped variable, about two-thirds of values sit within 1 sd of the mean and about 95% within 2 sd.</dd></div><div><dt>Real example</dt><dd>Truck groups A and B both have a mean of 4 tons. The sd (1.73 vs 3.61) shows that B is riskier, because its values are spread out.</dd></div></dl></div>
+</section>
+
+<!-- QUANTILES -->
+<section id="quantiles">
+  <span class="num">3 · Quantiles</span>
+  <h2>Quantiles, IQR and <code>summary()</code></h2>
+  <p class="plain">A quantile is a cut point. The 25% quantile (Q1) is the value that a quarter of the data falls below. The median is the 50% quantile.</p>
+  <div class="why"><h3>Quantiles and the IQR</h3><dl><div><dt>What it's for</dt><dd>Tell you where a value stands compared with the rest (“you scored higher than 90% of the class”) and describe spread without being fooled by outliers.</dd></div><div><dt>How it works</dt><dd>Sort the data and find the value at a given position: 25% of the way along is Q1, 75% is Q3. The IQR is Q3 − Q1, the width of the middle half, so the extreme top and bottom quarters are ignored.</dd></div><div><dt>Use it when</dt><dd>The data is skewed (use the IQR with the median, the same way you use the sd with the mean), you need cut-offs (“the top 5%”), or, in Week 4, you need the middle 95% of a sampling distribution.</dd></div><div><dt>Real example</dt><dd>Doctors' growth charts: a child at the 90th percentile for height is taller than 90% of children the same age.</dd></div></dl></div>
+<pre>quantile(x)
+<span class="c">#   0%  25%  50%  75% 100%</span>
+<span class="c">#  0.0  0.0  2.0  3.5  5.0</span>
+
+IQR(x)                      <span class="c"># 3.5    Q3 − Q1: the spread of the middle half</span>
+quantile(mtcars$mpg, c(0.05, 0.95))
+<span class="c">#   5%  95%</span>
+<span class="c"># 12.0 31.3   90% of the cars fall between these two values</span>
+
+summary(x)
+<span class="c">#  Min. 1st Qu.  Median    Mean 3rd Qu.    Max.</span>
+<span class="c">#   0.0     0.0     2.0     2.0     3.5     5.0</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>quantile(x)</dt><dd>Returns the cut points at 0%, 25%, 50%, 75% and 100% of the sorted data. Give it a second argument to pick your own cut points.</dd></div><div><dt>IQR(x)</dt><dd>Interquartile range: the 75% cut point minus the 25% cut point.</dd></div><div><dt>mtcars</dt><dd>A data frame (a table) built into R: 32 cars with 11 columns such as mpg and weight.</dd></div><div><dt>mtcars$mpg</dt><dd><code>$</code> picks one column from a data frame, like <code>$car-&gt;mpg</code> in PHP. The result is a vector.</dd></div><div><dt>c(0.05, 0.95)</dt><dd>The cut points you ask for, written as decimals: 0.05 is 5%.</dd></div><div><dt>summary(x)</dt><dd>Prints six numbers at once: min, Q1, median, mean, Q3 and max.</dd></div></dl></div>
+  <ul>
+    <li><code>summary()</code> is the quickest look at a numeric column: the five-number summary plus the mean. It's the same six numbers you see when you run <code>summary(df)</code> on a data frame.</li>
+    <li>The IQR resists outliers like the median does, because it ignores the top and bottom quarters.</li>
+    <li>The <code>printVecInfo</code> function from the homework prints the 0.05 and 0.95 quantiles this way.</li>
+  </ul>
+</section>
+
+<!-- SHAPE -->
+<section id="shape">
+  <span class="num">4 · Shape</span>
+  <h2>Histograms, box plots and skew</h2>
+  <p>The lecture uses state populations, which are built into R as <code>state.x77</code> (in thousands, from 1975). The numbers match the lecture exactly.</p>
+<pre>pop &lt;- state.x77[, "Population"]
+mean(pop)      <span class="c"># 4246.42</span>
+median(pop)    <span class="c"># 2838.5</span>
+sd(pop)        <span class="c"># 4464.491</span>
+hist(pop)                <span class="c"># 5 wide bars: 38 states land in the first one</span>
+hist(pop, breaks = 20)   <span class="c"># more, thinner bars show more detail</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>state.x77</dt><dd>A table of facts about the 50 US states that comes with R. It is a matrix (a grid of numbers), not a data frame, and population is in thousands.</dd></div><div><dt>[, "Population"]</dt><dd>Square brackets pick parts of a table: <code>[rows, columns]</code>. Leaving the rows blank means “all rows”, so this takes the whole Population column.</dd></div><div><dt>hist()</dt><dd>Draws a histogram: it splits the numbers into bins and draws one bar per bin, as tall as the count.</dd></div><div><dt>breaks = 20</dt><dd>An option (named argument) that asks for about 20 bins instead of R's default.</dd></div></dl></div>
+  <div class="figure"><svg viewBox="0 0 640 262" role="img" aria-labelledby="hT hD"><title id="hT">Histogram of US state populations</title><desc id="hD">Most of the 50 states sit in the first few bars under 6 million; a long tail runs out to California at 21 million. The mean, 4,246 thousand, sits to the right of the median, 2,838 thousand.</desc><line x1="56" x2="620" y1="214.0" y2="214.0" class="grid"/><text x="48" y="218.0" class="tick" text-anchor="end">0</text><line x1="56" x2="620" y1="150.7" y2="150.7" class="grid"/><text x="48" y="154.7" class="tick" text-anchor="end">4</text><line x1="56" x2="620" y1="87.3" y2="87.3" class="grid"/><text x="48" y="91.3" class="tick" text-anchor="end">8</text><line x1="56" x2="620" y1="24.0" y2="24.0" class="grid"/><text x="48" y="28.0" class="tick" text-anchor="end">12</text><rect x="57.0" y="24.0" width="23.6" height="190.0" class="bar"/><rect x="82.6" y="134.8" width="23.6" height="79.2" class="bar"/><rect x="108.3" y="71.5" width="23.6" height="142.5" class="bar"/><rect x="133.9" y="119.0" width="23.6" height="95.0" class="bar"/><rect x="159.5" y="119.0" width="23.6" height="95.0" class="bar"/><rect x="185.2" y="166.5" width="23.6" height="47.5" class="bar"/><rect x="236.5" y="198.2" width="23.6" height="15.8" class="bar"/><rect x="262.1" y="198.2" width="23.6" height="15.8" class="bar"/><rect x="287.7" y="198.2" width="23.6" height="15.8" class="bar"/><rect x="313.4" y="198.2" width="23.6" height="15.8" class="bar"/><rect x="339.0" y="182.3" width="23.6" height="31.7" class="bar"/><rect x="364.6" y="198.2" width="23.6" height="15.8" class="bar"/><rect x="518.5" y="198.2" width="23.6" height="15.8" class="bar"/><rect x="595.4" y="198.2" width="23.6" height="15.8" class="bar"/><text x="56.0" y="232" class="tick" text-anchor="middle">0</text><text x="184.2" y="232" class="tick" text-anchor="middle">5,000</text><text x="312.4" y="232" class="tick" text-anchor="middle">10,000</text><text x="440.5" y="232" class="tick" text-anchor="middle">15,000</text><text x="568.7" y="232" class="tick" text-anchor="middle">20,000</text><text x="338.0" y="254" class="axis" text-anchor="middle">Population (thousands)</text><text x="14" y="119.0" class="axis" text-anchor="middle" transform="rotate(-90 14 119.0)">States</text><line x1="128.8" x2="128.8" y1="18" y2="214" class="mk med"/><text x="122.8" y="46" class="lab med" text-anchor="end">median 2,838</text><line x1="164.9" x2="164.9" y1="18" y2="214" class="mk mean"/><text x="170.9" y="30" class="lab mean" text-anchor="start">mean 4,246</text></svg></div>
+  <p class="cap">hist(pop, breaks = 20). Each bar is 1,000 thousand people wide. Most states are small, and a few huge ones make a long tail to the right.</p>
+  <div class="why"><h3>Histogram</h3><dl><div><dt>What it's for</dt><dd>Shows the shape of one numeric variable at a glance: where values bunch up, how wide they spread, whether there is a long tail, and whether there are two peaks.</dd></div><div><dt>How it works</dt><dd>Cut the number line into equal bins and draw one bar per bin, as tall as the count of values inside it. More bins (<code>breaks = 20</code>) show more detail; too many make it jagged.</dd></div><div><dt>Use it when</dt><dd>Before choosing any other statistic. The shape tells you whether the mean or the median is the honest “typical” value.</dd></div></dl></div>
+  <p class="plain">A histogram counts how many values land in each bin. A long tail to the <b>right</b> is called <b>right skew</b> (positive skew). The tail pulls the <b class="mean">mean</b> to the right of the <b class="med">median</b>, here 4,246 against 2,838.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Shape</th><th>What you see</th><th>Mean vs median</th></tr></thead>
+    <tbody>
+      <tr><td>Symmetric (normal, bell)</td><td>Both sides look the same</td><td>About equal</td></tr>
+      <tr><td>Right skew</td><td>Long tail to the right (incomes, populations)</td><td>Mean &gt; median</td></tr>
+      <tr><td>Left skew</td><td>Long tail to the left (easy test scores)</td><td>Mean &lt; median</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The box plot shows the same data in five numbers</h3>
+<pre>boxplot(pop, horizontal = TRUE)</pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>boxplot()</dt><dd>Draws a box plot. <code>horizontal = TRUE</code> lays it on its side; the default is upright.</dd></div></dl></div>
+  <div class="why"><h3>Box plot</h3><dl><div><dt>What it's for</dt><dd>Summarizes a variable in five numbers and flags outliers. It's best for comparing several groups side by side, like mpg for 4, 6 and 8 cylinders.</dd></div><div><dt>How it works</dt><dd>The box runs from Q1 to Q3 with a line at the median. Whiskers reach to the furthest values within 1.5 × IQR of the box. Anything further is drawn as a dot and treated as an outlier.</dd></div><div><dt>Use it when</dt><dd>You compare groups, or you want to spot outliers quickly. A histogram shows the shape in more detail; a box plot is more compact.</dd></div></dl></div>
+  <div class="figure"><svg viewBox="0 0 640 150" role="img" aria-labelledby="bT bD"><title id="bT">Box plot of US state populations</title><desc id="bD">The box runs from about 1,058 to 4,981 thousand with the median at 2,838. The whisker reaches 10,735. Five states are outliers: Illinois, Pennsylvania, Texas, New York and California.</desc><line x1="24.0" x2="24.0" y1="30" y2="112" class="grid"/><text x="24.0" y="130" class="tick" text-anchor="middle">0</text><line x1="159.5" x2="159.5" y1="30" y2="112" class="grid"/><text x="159.5" y="130" class="tick" text-anchor="middle">5,000</text><line x1="294.9" x2="294.9" y1="30" y2="112" class="grid"/><text x="294.9" y="130" class="tick" text-anchor="middle">10,000</text><line x1="430.4" x2="430.4" y1="30" y2="112" class="grid"/><text x="430.4" y="130" class="tick" text-anchor="middle">15,000</text><line x1="565.8" x2="565.8" y1="30" y2="112" class="grid"/><text x="565.8" y="130" class="tick" text-anchor="middle">20,000</text><line x1="33.9" x2="52.7" y1="70" y2="70" class="wh"/><line x1="158.9" x2="314.8" y1="70" y2="70" class="wh"/><line x1="33.9" x2="33.9" y1="60" y2="80" class="wh"/><line x1="314.8" x2="314.8" y1="60" y2="80" class="wh"/><rect x="52.7" y="50" width="106.3" height="40" class="box"/><line x1="100.9" x2="100.9" y1="50" y2="90" class="mk med"/><circle cx="327.3" cy="70" r="5" class="out"/><circle cx="345.3" cy="70" r="5" class="out"/><circle cx="355.5" cy="70" r="5" class="out"/><circle cx="513.7" cy="70" r="5" class="out"/><circle cx="598.3" cy="70" r="5" class="out"/><text x="345.3" y="54" class="lab" text-anchor="middle">IL · PA · TX</text><text x="513.7" y="54" class="lab" text-anchor="middle">NY</text><text x="598.3" y="54" class="lab" text-anchor="end">CA</text><text x="100.9" y="106" class="lab med" text-anchor="middle">median</text><text x="52.7" y="44" class="lab" text-anchor="middle">Q1</text><text x="158.9" y="44" class="lab" text-anchor="middle">Q3</text></svg></div>
+  <p class="cap">The box is the middle half of the states (Q1 to Q3), and the line inside is the median. Whiskers reach out to 1.5 × IQR. Points beyond them are outliers: Illinois, Pennsylvania, Texas, New York and California.</p>
+
+  <h3>Comparing with a normal curve</h3>
+  <p>The lecture makes 500 random numbers from a normal (bell) distribution with the same mean and sd as the states. It's a function inside a function:</p>
+<pre>hist(rnorm(500, mean(pop), sd(pop)))   <span class="c"># bell-shaped, unlike the real data</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>rnorm(n, mean, sd)</dt><dd><b>R</b>andom <b>norm</b>al: makes n random numbers from a bell curve with the mean and sd you give. Here it makes 500, with the same mean and sd as the states.</dd></div><div><dt>f(g(x))</dt><dd>A function inside a function. R runs the inside first: <code>rnorm()</code> makes the numbers, then <code>hist()</code> draws them.</dd></div></dl></div>
+  <p>The real data doesn't look like that, which tells you the state populations are not normally distributed.</p>
+</section>
+
+<!-- CATEGORIES -->
+<section id="counts">
+  <span class="num">5 · Categories</span>
+  <h2>Counting categories with <code>table()</code></h2>
+  <p>You can't take the mean of text or categories. For those, you count. This is a frequency distribution.</p>
+  <div class="why"><h3>Frequency tables and proportions</h3><dl><div><dt>What it's for</dt><dd>Describe categorical data: how many of each kind, and what share of the whole.</dd></div><div><dt>How it works</dt><dd><code>table()</code> counts each distinct value. <code>prop.table()</code> divides each count by the total so the shares add up to 1, which makes groups of different sizes comparable.</dd></div><div><dt>Use it when</dt><dd>The column is a category (species, state, yes/no) or a number with only a few distinct values (cylinders, gears). Proportions are better than counts when you compare two datasets of different sizes.</dd></div></dl></div>
+<pre>table(mtcars$cyl)
+<span class="c">#  4  6  8</span>
+<span class="c"># 11  7 14     14 cars have 8 cylinders</span>
+
+prop.table(table(mtcars$cyl))
+<span class="c">#     4     6     8</span>
+<span class="c"># 0.344 0.219 0.438    shares that add up to 1</span>
+
+length(unique(df$Location))   <span class="c"># how many different values (HW 3)</span>
+summary(iris$Species)         <span class="c"># summary() of a factor also gives counts: 50 50 50</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>prop.table()</dt><dd>Turns counts into shares of the total: each count divided by the sum, so they add up to 1.</dd></div><div><dt>unique()</dt><dd>Removes repeats and keeps one copy of each value, like SQL <code>SELECT DISTINCT</code>.</dd></div><div><dt>length()</dt><dd>How many values a vector has. <code>length(unique(x))</code> is SQL's <code>COUNT(DISTINCT x)</code>.</dd></div><div><dt>iris</dt><dd>A built-in data frame of 150 flowers from three species.</dd></div><div><dt>factor</dt><dd>R's type for categories with a fixed set of levels, like an ENUM column. <code>Species</code> is a factor, so <code>summary()</code> counts each level instead of averaging.</dd></div></dl></div>
+  <p>SQL brain: <code>table(df$x)</code> is <code>SELECT x, COUNT(*) … GROUP BY x</code>.</p>
+</section>
+
+<!-- GROUPS -->
+<section id="groups">
+  <span class="num">6 · By group</span>
+  <h2>The same stat for each group</h2>
+  <p>The mean mpg for each number of cylinders, done three ways. All three give the same numbers.</p>
+  <div class="why"><h3>Stats by group</h3><dl><div><dt>What it's for</dt><dd>Turn one big average into a comparison between groups, which is where most real insights come from (“8-cylinder cars use far more fuel”).</dd></div><div><dt>How it works</dt><dd>Split the rows by the group column, apply the statistic to each piece, and put the answers back together. This is exactly SQL's <code>GROUP BY</code>.</dd></div><div><dt>Use it when</dt><dd>You suspect a category matters: month vs temperature, species vs petal size, cylinders vs mpg.</dd></div></dl></div>
+<pre>tapply(mtcars$mpg, mtcars$cyl, mean)                 <span class="c"># base R</span>
+aggregate(mpg ~ cyl, data = mtcars, mean)            <span class="c"># base R, returns a data frame</span>
+mtcars %&gt;% group_by(cyl) %&gt;% summarize(m = mean(mpg))  <span class="c"># dplyr: needs library(tidyverse)</span>
+<span class="c">#     4     6     8</span>
+<span class="c"># 26.66 19.74 15.10</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>tapply(values, groups, f)</dt><dd>Splits the values by group and applies the function to each group. Here: mpg split by cyl, then <code>mean</code> on each part.</dd></div><div><dt>aggregate(y ~ g, data, f)</dt><dd>Does the same, but takes a formula and returns a data frame. Read <code>mpg ~ cyl</code> as “mpg by cyl”.</dd></div><div><dt>%&gt;%</dt><dd>The pipe: passes the result on the left into the function on the right. Read it as “then”, like chaining methods in Laravel.</dd></div><div><dt>group_by()</dt><dd>From dplyr: marks the groups, like SQL <code>GROUP BY</code>. It doesn't change the numbers yet.</dd></div><div><dt>summarize()</dt><dd>From dplyr: calculates one row per group. <code>m = mean(mpg)</code> names the new column m.</dd></div><div><dt>library(tidyverse)</dt><dd>Loads the tidyverse packages, which include dplyr. Without it R says “could not find function”.</dd></div></dl></div>
+  <p>Swap <code>mean</code> for <code>median</code>, <code>sd</code> or <code>max</code> to get any other statistic per group.</p>
+</section>
+
+<!-- PAIRS -->
+<section id="pairs">
+  <span class="num">7 · Two columns</span>
+  <h2>Correlation: do two columns move together?</h2>
+<pre>cor(mtcars$wt, mtcars$mpg)   <span class="c"># -0.868</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>cor(x, y)</dt><dd>Correlation between two numeric columns of the same length. <code>wt</code> is weight in 1,000 lb.</dd></div></dl></div>
+  <div class="why"><h3>Correlation</h3><dl><div><dt>What it's for</dt><dd>Measures in one number how strongly two numeric columns move together in a straight line.</dd></div><div><dt>How it works</dt><dd>It checks, row by row, whether a value above its mean in one column tends to go with a value above (or below) its mean in the other. The result is scaled to run from −1 to +1, so it has no units and you can compare it across datasets.</dd></div><div><dt>Use it when</dt><dd>You are exploring which variables are related before building a regression. It only catches straight-line patterns, and it can be fooled by a single outlier.</dd></div></dl></div>
+  <p class="plain">Correlation runs from −1 to +1. Near +1 means both go up together. Near −1 means one goes up as the other goes down. Near 0 means no straight-line link. Here, heavier cars get fewer miles per gallon, strongly.</p>
+  <p>Correlation is not causation. It describes the data; it doesn't prove that one thing causes the other.</p>
+</section>
+
+<!-- MISSING -->
+<section id="na">
+  <span class="num">8 · Missing values</span>
+  <h2>The <code>NA</code> trap</h2>
+<pre>mean(c(1, NA, 3))                 <span class="c"># NA     one missing value spoils the result</span>
+mean(c(1, NA, 3), na.rm = TRUE)   <span class="c"># 2      na.rm = "NA remove"</span>
+sum(is.na(airquality$Ozone))      <span class="c"># 37     count the missing values first</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>NA</dt><dd>“Not Available”: R's marker for a missing value, like SQL <code>NULL</code>.</dd></div><div><dt>na.rm = TRUE</dt><dd>An option meaning “NA remove”: skip the missing values before calculating.</dd></div><div><dt>is.na()</dt><dd>Checks each value and returns TRUE where it is missing and FALSE where it isn't.</dd></div><div><dt>sum(TRUE/FALSE)</dt><dd>R counts TRUE as 1 and FALSE as 0, so <code>sum(is.na(x))</code> counts the missing values.</dd></div><div><dt>airquality</dt><dd>A built-in data frame of daily air readings in New York in 1973. Ozone has 37 gaps.</dd></div></dl></div>
+  <p><code>na.rm = TRUE</code> works the same way in <code>median</code>, <code>sd</code>, <code>var</code>, <code>min</code>, <code>max</code>, <code>sum</code>, <code>range</code> and <code>quantile</code>.</p>
+  <p><b>Why does R return NA instead of just skipping it?</b> On purpose: R refuses to guess. If a value is unknown, the true mean is unknown too, so R makes you decide out loud with <code>na.rm = TRUE</code>. Always count the missing values first. If a large share is missing, the mean of what is left may not represent the whole group.</p>
+</section>
+
+<div class="part" id="partB">
+  <span class="eyebrow">Part B · Weeks 4–5</span>
+  <h2>Sampling, randomness and inference</h2>
+  <p>Descriptive stats describe the data you have. Inferential stats use a sample to say something about a bigger population you can't see all of.</p>
+</div>
+
+<section id="sampling">
+  <span class="num">9 · Population and sample</span>
+  <h2>Why we sample</h2>
+  <p class="plain">The <b>population</b> is everything you want to study, like every iPhone in use or every US voter. You almost never get all of it. A <b>sample</b> is the part you actually collect.</p>
+  <ul>
+    <li><b>Random sampling:</b> every element has an equal chance of being picked.</li>
+    <li><b>With replacement:</b> you put each item back before the next draw, so it can be picked again. That is <code>replace = TRUE</code>.</li>
+    <li><b>Randomness</b> means one draw is uncertain. Only the long run (many draws) becomes predictable.</li>
+  </ul>
+  <div class="why"><h3>Random sampling</h3><dl><div><dt>What it's for</dt><dd>Lets you learn about a huge population from a small, affordable piece of it. Polls ask about 1,000 people to describe 200 million voters.</dd></div><div><dt>How it works</dt><dd>Every member has the same chance of being picked, so no group is favored on purpose or by accident. Then, on average, the sample looks like the population, and the errors are random rather than one-sided.</dd></div><div><dt>Use it when</dt><dd>Always, when you can't measure everyone. A non-random sample (only asking your friends, only online users) gives <b>biased</b> results that more data can't fix.</dd></div><div><dt>Real example</dt><dd>Asking only students in the library about study hours would overstate how much students study. Picking random student IDs would not.</dd></div></dl></div>
+<pre>pop &lt;- state.x77[, "Population"]       <span class="c"># the "population": all 50 states</span>
+sample(pop, size = 6, replace = TRUE)   <span class="c"># 6 random states; different every time</span>
+mean(sample(pop, size = 6, replace = TRUE))   <span class="c"># the mean of one sample</span>
+
+set.seed(10)    <span class="c"># fixes the random numbers so you get the same ones every run</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>sample(x, size, replace)</dt><dd>Picks <code>size</code> random values from x. <code>replace = TRUE</code> puts each one back after picking, so the same value can come up twice.</dd></div><div><dt>set.seed()</dt><dd>Sets the starting point of R's random number generator, so the “random” results come out the same every time you run the code.</dd></div></dl></div>
+  <div class="trap"><b>Why <code>set.seed()</code>?</b> It makes random results repeatable, so your knitted homework and your classmate's run show the same numbers. The seed value itself (10, 110, 387) doesn't matter.</div>
+</section>
+
+<section id="lln">
+  <span class="num">10 · Coin flips and the LLN</span>
+  <h2>Random coin flips and the Law of Large Numbers</h2>
+  <p>Things with two outcomes (heads or tails, red or blue, survived or not) follow the <b>binomial distribution</b>. <code>rbinom()</code> makes random ones.</p>
+<pre>rbinom(n = 8, size = 1, prob = 0.5)   <span class="c"># 8 flips of 1 fair coin: e.g. 1 0 0 1 0 0 0 0</span>
+<span class="c">#        n = how many results   size = coins per result   prob = chance of a 1</span>
+
+flips &lt;- factor(rbinom(8, 1, 0.5), labels = c("red", "blue"))   <span class="c"># name the 0s and 1s</span>
+table(flips)      <span class="c"># count each color</span>
+barplot(table(flips))</pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>rbinom(n, size, prob)</dt><dd><b>R</b>andom <b>binom</b>ial: random results for things with two outcomes. Each result counts the 1s (successes) in <code>size</code> tries, each with chance <code>prob</code>. With size = 1, each result is a single 0 or 1, like one coin flip.</dd></div><div><dt>factor(…, labels = )</dt><dd>Turns the 0s and 1s into categories with readable names: 0 becomes "red" and 1 becomes "blue".</dd></div><div><dt>barplot()</dt><dd>Draws one bar per category, as tall as its count. Use it for counts from <code>table()</code>; use <code>hist()</code> for raw numbers.</dd></div></dl></div>
+  <p>With only 8 draws, a 6–2 split is normal. Here is the share of heads as the number of flips grows (with <code>set.seed(1)</code>):</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Flips</th><th>R code</th><th class="r">Share of heads</th></tr></thead>
+    <tbody>
+      <tr><td>10</td><td><code>mean(rbinom(10, 1, 0.5))</code></td><td class="r">0.60</td></tr>
+      <tr><td>100</td><td><code>mean(rbinom(100, 1, 0.5))</code></td><td class="r">0.47</td></tr>
+      <tr><td>1,000</td><td><code>mean(rbinom(1000, 1, 0.5))</code></td><td class="r">0.481</td></tr>
+      <tr><td>100,000</td><td><code>mean(rbinom(100000, 1, 0.5))</code></td><td class="r">0.50009</td></tr>
+    </tbody>
+  </table></div>
+  <p class="plain"><b>Law of Large Numbers (LLN):</b> the more observations you collect, the closer your result gets to the true value. It is about <b>accuracy</b>.</p>
+  <div class="why"><h3>Why the LLN matters</h3><dl><div><dt>What it's for</dt><dd>It's the reason bigger samples are more trustworthy, and why casinos, insurance companies and polls can make reliable predictions from random events.</dd></div><div><dt>How it works</dt><dd>Random luck goes both ways. In 10 flips, a lucky streak of heads is a big part of the total. In 100,000 flips, the lucky streaks up and down cancel out, so the share settles at the true 50%.</dd></div><div><dt>Use it when</dt><dd>You decide how much data to collect, or you explain why a small sample gave a strange result. Small samples swing; large samples settle.</dd></div><div><dt>Real example</dt><dd>A new restaurant with three 5-star reviews isn't proven great. One with 2,000 reviews averaging 4.6 is much more reliable.</dd></div></dl></div>
+  <p>The mean of 0s and 1s is the share of 1s, which is why <code>mean()</code> works here.</p>
+</section>
+
+<section id="clt">
+  <span class="num">11 · Sampling distributions and the CLT</span>
+  <h2>Many samples: the sampling distribution</h2>
+  <p>One sample mean is a bit off by chance. To see how far off, repeat the sampling many times with <code>replicate()</code> and look at all the means together. That pile of means is the <b>sampling distribution</b>.</p>
+<pre>replicate(4, mean(sample(pop, size = 16, replace = TRUE)))
+<span class="c"># 3859.250 3701.875 2854.375 3272.375   four sample means</span>
+
+sampleMeans &lt;- replicate(2000, mean(sample(pop, size = 16, replace = TRUE)))
+mean(sampleMeans)     <span class="c"># about 4,240: very close to the true 4,246</span>
+hist(sampleMeans)</pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>replicate(k, expr)</dt><dd>Runs the same code k times and keeps every result in a vector. Here it repeats “draw 16 states, take their mean” 2,000 times, giving 2,000 sample means.</dd></div></dl></div>
+  <p>The lecture shows the mean of the means getting closer to 4,246 as you replicate more: 4 samples were off by 3.5%, 400 by 2%, and 2,000 by only 0.09%. That is the LLN again.</p>
+  <div class="figure"><svg viewBox="0 0 640 330" role="img" aria-labelledby="cT cD"><title id="cT">Sampling distributions for three sample sizes</title><desc id="cD">2,000 sample means of state populations for samples of size 4, 16 and 36. As the sample size grows, the histogram gets narrower, taller and more bell-shaped, centered near the true mean of 4,246.</desc><line x1="96" x2="620" y1="94" y2="94" class="wh"/><text x="86" y="59.0" class="lab" text-anchor="end">size = 4</text><text x="86" y="73.0" class="tick" text-anchor="end">2,231 sd</text><rect x="97.0" y="92.5" width="32.9" height="1.5" class="bar"/><rect x="131.9" y="74.5" width="32.9" height="19.5" class="bar"/><rect x="166.9" y="61.8" width="32.9" height="32.2" class="bar"/><rect x="201.8" y="65.2" width="32.9" height="28.8" class="bar"/><rect x="236.7" y="71.0" width="32.9" height="23.0" class="bar"/><rect x="271.7" y="78.2" width="32.9" height="15.8" class="bar"/><rect x="306.6" y="81.5" width="32.9" height="12.5" class="bar"/><rect x="341.5" y="84.8" width="32.9" height="9.2" class="bar"/><rect x="376.5" y="88.0" width="32.9" height="6.0" class="bar"/><rect x="411.4" y="91.5" width="32.9" height="2.5" class="bar"/><rect x="446.3" y="92.2" width="32.9" height="1.8" class="bar"/><rect x="481.3" y="93.5" width="32.9" height="0.5" class="bar"/><rect x="516.2" y="93.8" width="32.9" height="0.2" class="bar"/><rect x="551.1" y="93.9" width="32.9" height="0.1" class="bar"/><rect x="586.1" y="93.9" width="32.9" height="0.1" class="bar"/><line x1="244.3" x2="244.3" y1="16" y2="94" class="mk mean"/><line x1="96" x2="620" y1="186" y2="186" class="wh"/><text x="86" y="151.0" class="lab" text-anchor="end">size = 16</text><text x="86" y="165.0" class="tick" text-anchor="end">1,109 sd</text><rect x="131.9" y="184.8" width="32.9" height="1.2" class="bar"/><rect x="166.9" y="169.0" width="32.9" height="17.0" class="bar"/><rect x="201.8" y="135.9" width="32.9" height="50.1" class="bar"/><rect x="236.7" y="135.5" width="32.9" height="50.5" class="bar"/><rect x="271.7" y="161.4" width="32.9" height="24.6" class="bar"/><rect x="306.6" y="177.8" width="32.9" height="8.2" class="bar"/><rect x="341.5" y="183.9" width="32.9" height="2.1" class="bar"/><rect x="376.5" y="185.8" width="32.9" height="0.2" class="bar"/><line x1="244.3" x2="244.3" y1="108" y2="186" class="mk mean"/><line x1="96" x2="620" y1="278" y2="278" class="wh"/><text x="86" y="243.0" class="lab" text-anchor="end">size = 36</text><text x="86" y="257.0" class="tick" text-anchor="end">738 sd</text><rect x="166.9" y="271.8" width="32.9" height="6.2" class="bar"/><rect x="201.8" y="224.7" width="32.9" height="53.3" class="bar"/><rect x="236.7" y="206.0" width="32.9" height="72.0" class="bar"/><rect x="271.7" y="257.8" width="32.9" height="20.2" class="bar"/><rect x="306.6" y="275.9" width="32.9" height="2.1" class="bar"/><rect x="341.5" y="277.9" width="32.9" height="0.1" class="bar"/><line x1="244.3" x2="244.3" y1="200" y2="278" class="mk mean"/><text x="96.0" y="296" class="tick" text-anchor="middle">0</text><text x="270.7" y="296" class="tick" text-anchor="middle">5,000</text><text x="445.3" y="296" class="tick" text-anchor="middle">10,000</text><text x="620.0" y="296" class="tick" text-anchor="middle">15,000</text><text x="250.3" y="24" class="lab mean">true mean 4,246</text><text x="358.0" y="318" class="axis" text-anchor="middle">Mean population of the sample (thousands)</text></svg></div>
+  <p class="cap">2,000 sample means for each sample size (set.seed(4)). The populations themselves are right-skewed (see the histogram in Part A), but the sample means form a bell. Bigger samples give a narrower bell.</p>
+  <p class="plain"><b>Central Limit Theorem (CLT):</b> take many random samples and compute each one's mean. As the sample size grows, the means form a <b>normal (bell-shaped) distribution</b>, even when the population itself is not normal. It is about <b>shape</b>.</p>
+  <div class="why"><h3>Sampling distributions and the CLT</h3><dl><div><dt>What it's for</dt><dd>Tell you how much a sample mean would change if you sampled again, which is how you judge whether a result is real or just luck. The CLT is why bell-curve methods work for almost any data.</dd></div><div><dt>How it works</dt><dd>Each sample mean averages out some of the extreme values, so means cluster near the true mean more tightly than single values do. Highs and lows in a sample tend to cancel, so means far from the center are rare. That gives the bell shape. Bigger samples cancel more, so the bell gets narrower.</dd></div><div><dt>Use it when</dt><dd>You want to compare one sample's mean with what chance alone would produce, as in the mystery sample.</dd></div></dl></div>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>Law of Large Numbers</th><th>Central Limit Theorem</th></tr></thead>
+    <tbody>
+      <tr><td>What grows</td><td>The number of observations</td><td>The size of each sample (with many samples)</td></tr>
+      <tr><td>What happens</td><td>The result gets closer to the true value</td><td>The sample means form a bell curve</td></tr>
+      <tr><td>One word</td><td><b>Accuracy</b></td><td><b>Shape</b></td></tr>
+      <tr><td>Example</td><td>100,000 flips give 50% heads</td><td>The histogram of 2,000 sample means is bell-shaped</td></tr>
+    </tbody>
+  </table></div>
+  <div class="trap"><b>Exam trap:</b> a question that describes "more flips" or "more data, closer to the truth" is the LLN. A question that describes "the histogram of many sample means looks normal" is the CLT.</div>
+  <p class="cap">Extra, not in the slides: the spread of the sample means is about <code>sd(pop) / sqrt(n)</code>, called the standard error. For n = 16 that is 4464 ÷ 4 ≈ 1,116, and R's 2,000 means had an sd of 1,109.</p>
+</section>
+
+<section id="mystery">
+  <span class="num">12 · Quantiles and the mystery sample</span>
+  <h2>Is this sample from our population?</h2>
+  <p>A <b>quantile</b> is a percentile written as a decimal: the median is the 0.50 quantile. <code>quantile(0:200, c(0.25, 0.75))</code> gives <code>50</code> and <code>150</code>.</p>
+  <p>The lecture gives a mystery sample of 16 numbers and asks whether it came from the states.</p>
+<pre>MysterySample &lt;- c(333, 1088, 3699, 3805, 3135, 3390, 99, 1049,
+                   235, 129, 4299, 3649, 2295, 4663, 1837, 2711)
+mean(MysterySample)                          <span class="c"># 2276</span>
+quantile(sampleMeans, probs = c(0.025, 0.975))
+<span class="c">#   2.5%  97.5%</span>
+<span class="c">#   2332   6656     the middle 95% of sample means</span>
+mean(sampleMeans &lt; 2276)                     <span class="c"># 0.0215: only about 2% are this low</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>probs = c(0.025, 0.975)</dt><dd>Asks <code>quantile()</code> for the 2.5% and 97.5% cut points, which mark off the middle 95%.</dd></div><div><dt>sampleMeans &lt; 2276</dt><dd>Compares every sample mean with 2276 and returns TRUE or FALSE for each one.</dd></div><div><dt>mean(TRUE/FALSE)</dt><dd>TRUE counts as 1 and FALSE as 0, so the mean is the <b>share</b> that is TRUE: here 0.0215, or 2.15%.</dd></div></dl></div>
+  <div class="figure"><svg viewBox="0 0 640 262" role="img" aria-labelledby="mT mD"><title id="mT">Where the mystery sample falls</title><desc id="mD">Histogram of 2,000 sample means of size 16. The middle 95 percent lies between 2,332 and 6,656. The mystery sample mean of 2,276 sits below the 2.5 percent cutoff, in the left tail.</desc><line x1="56" x2="620" y1="214.0" y2="214.0" class="grid"/><text x="48" y="218.0" class="tick" text-anchor="end">0</text><line x1="56" x2="620" y1="168.0" y2="168.0" class="grid"/><text x="48" y="172.0" class="tick" text-anchor="end">100</text><line x1="56" x2="620" y1="122.0" y2="122.0" class="grid"/><text x="48" y="126.0" class="tick" text-anchor="end">200</text><line x1="56" x2="620" y1="76.0" y2="76.0" class="grid"/><text x="48" y="80.0" class="tick" text-anchor="end">300</text><line x1="56" x2="620" y1="30.0" y2="30.0" class="grid"/><text x="48" y="34.0" class="tick" text-anchor="end">400</text><rect x="187.5" y="30" width="243.9" height="184" class="band95"/><rect x="113.4" y="213.5" width="26.2" height="0.5" class="bar"/><rect x="141.6" y="207.1" width="26.2" height="6.9" class="bar"/><rect x="169.8" y="182.3" width="26.2" height="31.7" class="bar"/><rect x="198.0" y="144.1" width="26.2" height="69.9" class="bar"/><rect x="226.2" y="78.3" width="26.2" height="135.7" class="bar"/><rect x="254.4" y="50.2" width="26.2" height="163.8" class="bar"/><rect x="282.6" y="45.2" width="26.2" height="168.8" class="bar"/><rect x="310.8" y="80.6" width="26.2" height="133.4" class="bar"/><rect x="339.0" y="130.3" width="26.2" height="83.7" class="bar"/><rect x="367.2" y="150.5" width="26.2" height="63.5" class="bar"/><rect x="395.4" y="183.2" width="26.2" height="30.8" class="bar"/><rect x="423.6" y="196.1" width="26.2" height="17.9" class="bar"/><rect x="451.8" y="203.9" width="26.2" height="10.1" class="bar"/><rect x="480.0" y="211.7" width="26.2" height="2.3" class="bar"/><rect x="508.2" y="213.5" width="26.2" height="0.5" class="bar"/><rect x="536.4" y="213.5" width="26.2" height="0.5" class="bar"/><text x="56.0" y="232" class="tick" text-anchor="middle">0</text><text x="168.8" y="232" class="tick" text-anchor="middle">2,000</text><text x="281.6" y="232" class="tick" text-anchor="middle">4,000</text><text x="394.4" y="232" class="tick" text-anchor="middle">6,000</text><text x="507.2" y="232" class="tick" text-anchor="middle">8,000</text><text x="620.0" y="232" class="tick" text-anchor="middle">10,000</text><line x1="187.5" x2="187.5" y1="30" y2="214" class="cut"/><text x="191.5" y="22" class="tick" text-anchor="start">2.5%: 2,332</text><line x1="431.4" x2="431.4" y1="30" y2="214" class="cut"/><text x="427.4" y="22" class="tick" text-anchor="end">97.5%: 6,656</text><line x1="184.4" x2="184.4" y1="70" y2="214" class="mk out2"/><circle cx="184.4" cy="214" r="5" class="outf"/><text x="178.4" y="82" class="lab warnt" text-anchor="end">mystery 2,276</text><text x="338.0" y="254" class="axis" text-anchor="middle">Mean of a sample of 16 states (thousands)</text></svg></div>
+  <p class="cap">The shaded band is the middle 95% of 2,000 means of real state samples. The mystery mean falls outside it, in the left tail. Your exact cutoffs vary a little with the seed; the lecture got 2,391 and 6,591.</p>
+  <p class="plain">If the mystery sample really came from the states, a mean this low would happen only about 2% of the time. That's rare, so we <b>infer</b> it probably came from somewhere else. This is the core idea of inferential statistics.</p>
+  <div class="why"><h3>Why the 2.5% and 97.5% cut-offs?</h3><dl><div><dt>What it's for</dt><dd>They draw a line between “ordinary chance” and “too unusual to be chance”.</dd></div><div><dt>How it works</dt><dd>Build the sampling distribution, keep its middle 95%, and treat anything outside as unusual. Outside means it would happen less than 5% of the time (2.5% in each tail) if the sample really came from that population. The 5% is a convention, the same one behind “p &lt; 0.05” in Part C.</dd></div><div><dt>Use it when</dt><dd>You test a claim: does this batch, sample or group really belong to the known population? It's the same logic as a p-value, just done by simulation instead of a formula.</dd></div></dl></div>
+</section>
+
+<div class="part" id="partC">
+  <span class="eyebrow">Part C · Weeks 8–9</span>
+  <h2>Models: regression and accuracy</h2>
+  <p>Models use some columns to predict another. The statistics here tell you how good the model is.</p>
+</div>
+
+<section id="regression">
+  <span class="num">13 · Linear regression words</span>
+  <h2>The regression equation</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Term</th><th>Plain words</th><th>Oil example</th></tr></thead>
+    <tbody>
+      <tr><td>Dependent (outcome) variable, Y</td><td>What you want to predict</td><td><code>repairs</code></td></tr>
+      <tr><td>Independent (predictor) variables, X</td><td>What you predict it with</td><td><code>oilChanges</code>, <code>miles</code></td></tr>
+      <tr><td>Intercept</td><td>The predicted Y when every X is 0</td><td>35.7</td></tr>
+      <tr><td>Coefficient (slope, weight)</td><td>How much Y changes when that X goes up by 1, with the others held fixed</td><td>−57.3 per oil change</td></tr>
+      <tr><td>Y-hat (Ŷ)</td><td>The predicted Y</td><td>Predicted repair cost</td></tr>
+    </tbody>
+  </table></div>
+  <p class="plain">The equation is Y = a + bX. With two predictors: <b>repairs = 35.7 − 57.3 × oilChanges + 0.0051 × miles</b>.</p>
+  <p>In R, <code>~</code> means "is predicted by": <code>lm(repairs ~ oilChanges + miles, data = oil)</code>. Read <code>lm(y ~ ., data = df)</code> as "predict y from every other column".</p>
+  <div class="why"><h3>Linear regression</h3><dl><div><dt>What it's for</dt><dd>Does two jobs: it predicts a number for new cases (the repair cost of a car), and it explains how much each predictor matters, with the others held fixed.</dd></div><div><dt>How it works</dt><dd>R finds the straight line (or flat surface, with two predictors) that makes the squared misses, the residuals, as small as possible. That's why it's called “least squares”. The slope of that line is the coefficient.</dd></div><div><dt>Use it when</dt><dd>The outcome is a number (cost, price, score) and you expect roughly straight-line relationships. For a category outcome (survived yes/no), use a tree or an SVM instead.</dd></div><div><dt>Real example</dt><dd>A fleet manager can see that each oil change is linked to about $57 less in repairs and decide how often to change the oil.</dd></div></dl></div>
+</section>
+
+<section id="lmout">
+  <span class="num">14 · Reading summary(lm)</span>
+  <h2>What every line of the output means</h2>
+<pre>oilChanges &lt;- c(3,5,2,3,2,6,6,4,3,2,0,8,7,8)
+repairs &lt;- c(300,300,500,400,700,420,100,290,475,620,600,150,200,50)
+miles &lt;- c(100500,116000,136000,110500,150500,117000,89500,
+           99500,100500,120500,106000,115000,104000,98500)
+oil &lt;- data.frame(oilChanges, repairs, miles)
+lmOut &lt;- lm(repairs ~ oilChanges + miles, data = oil)
+summary(lmOut)
+
+Residuals:
+    Min      1Q  Median      3Q     Max          <span class="c"># ❶</span>
+-115.39  -38.76  -19.61   31.48  130.62
+Coefficients:
+              Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)  35.716647 172.343530   0.207  0.83961        <span class="c"># ❷</span>
+oilChanges  -57.256143   8.945717  -6.400 5.08e-05 ***    <span class="c"># ❸</span>
+miles         0.005104   0.001377   3.706  0.00346 **     <span class="c"># ❹</span>
+Residual standard error: 74.71 on 11 degrees of freedom   <span class="c"># ❺</span>
+Multiple R-squared:  0.8828, Adjusted R-squared:  0.8615  <span class="c"># ❻</span>
+F-statistic: 41.44 on 2 and 11 DF,  p-value: 7.56e-06    <span class="c"># ❼</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>data.frame()</dt><dd>Builds a table from vectors of the same length. Each vector becomes a column.</dd></div><div><dt>lm(y ~ x1 + x2, data)</dt><dd><b>L</b>inear <b>m</b>odel: fits a regression. Left of <code>~</code> is what you predict; right of it are the predictors, joined with <code>+</code>.</dd></div><div><dt>summary(model)</dt><dd>On a model, <code>summary()</code> prints the full report you see here, not the six numbers it gives for a vector.</dd></div><div><dt>5.08e-05</dt><dd>Scientific notation: 5.08 × 10<sup>−5</sup> = 0.0000508. Move the decimal point 5 places left.</dd></div></dl></div>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Part</th><th>What it means here</th></tr></thead>
+    <tbody>
+      <tr><td>❶</td><td>Residuals</td><td>Residual = actual − predicted. These are the five-number summary of the model's misses: the worst was $130 off.</td></tr>
+      <tr><td>❷</td><td>Intercept</td><td>35.7, but p = 0.84, so it's not significant. That's fine: the intercept is rarely the point.</td></tr>
+      <tr><td>❸</td><td><b>Estimate</b> (coefficient)</td><td>Each extra oil change lowers repairs by about <b>$57</b>, with miles held the same.</td></tr>
+      <tr><td>❸</td><td><b>Pr(&gt;|t|)</b> (p-value) and stars</td><td>5.08e-05 is 0.0000508, far below 0.05, so oil changes are a <b>significant</b> predictor. More stars mean a smaller p-value: *** &lt; 0.001, ** &lt; 0.01, * &lt; 0.05.</td></tr>
+      <tr><td>❹</td><td>miles</td><td>Each extra mile adds $0.005, so 10,000 miles adds about $51. Significant (p = 0.003).</td></tr>
+      <tr><td>❸❹</td><td>Std. Error, t value</td><td>How uncertain the estimate is. t = Estimate ÷ Std. Error. A big t (far from 0) gives a small p.</td></tr>
+      <tr><td>❺</td><td>Residual standard error</td><td>A typical prediction misses by about $75.</td></tr>
+      <tr><td>❻</td><td><b>R-squared</b></td><td>The share of the variation in Y that the model explains, from 0 to 1. Oil changes and miles explain about <b>86%</b> (adjusted) of repair costs. Adjusted R² is a bit lower because it penalizes extra predictors; report it when there's more than one.</td></tr>
+      <tr><td>❼</td><td>F-statistic p-value</td><td>Tests the whole model at once. 7.56e-06 &lt; 0.05, so the model as a whole is significant.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="why"><h3>What a p-value really is</h3><dl><div><dt>What it's for</dt><dd>Answers the question “could this pattern be pure luck?” for each predictor.</dd></div><div><dt>How it works</dt><dd>R assumes the predictor has no real effect (a coefficient of 0) and asks how likely it would be to see an estimate this far from 0 just by chance. A tiny p-value means “very unlikely by luck”, so we call the effect significant. It's the same idea as the mystery sample landing outside the middle 95%.</dd></div><div><dt>Use it when</dt><dd>You decide which predictors to keep or trust. A p-value says <b>whether</b> an effect is likely real; the estimate says <b>how big</b> it is. A significant effect can still be too small to matter.</dd></div></dl></div>
+  <div class="why"><h3>R-squared</h3><dl><div><dt>What it's for</dt><dd>Tells you how well the model explains the outcome overall, on a 0 to 1 scale.</dd></div><div><dt>How it works</dt><dd>Compare the model's misses with the misses of a lazy model that always predicts the mean. If the model cuts the squared misses by 86%, R² is 0.86. Adjusted R² takes a small penalty for each extra predictor, because adding any column, even a useless one, never lowers plain R².</dd></div><div><dt>Use it when</dt><dd>You compare models of the same outcome (oil only: 0.74; oil and miles: 0.86) or describe how complete the model is. A low R² doesn't mean the model is wrong, only that other factors matter too.</dd></div></dl></div>
+  <div class="trap"><b>Reading p-values:</b> <code>e-05</code> means "move the decimal point 5 places left". Any p-value below <b>0.05</b> is called significant. A p-value tells you whether a predictor matters; the estimate tells you how much and in which direction.</div>
+  <h3>Predicting</h3>
+<pre>predict(lmOut, newdata = data.frame(oilChanges = 3, miles = 100000))
+<span class="c"># 374.38    = 35.72 − 57.26 × 3 + 0.005104 × 100000</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>predict(model, newdata)</dt><dd>Plugs new rows into the model's equation and returns the predicted Y. <code>newdata</code> must be a data frame whose column names match the predictors.</dd></div></dl></div>
+  <p>With only <code>oilChanges</code> in the model, the R² drops to 0.74 and the slope becomes −69. Adding a useful predictor raised the explained share.</p>
+  <p>The model doesn't prove that oil changes <b>cause</b> lower repairs, and it can predict nonsense far outside the data, such as negative repair costs for 10 or more oil changes in the one-predictor model. Regression shows association, not causation.</p>
+</section>
+
+<section id="accuracy">
+  <span class="num">15 · Classification accuracy</span>
+  <h2>The confusion matrix, accuracy and the NIR</h2>
+  <p>For a model that predicts a category (survived or not, good or bad credit), you count how often it was right. The lecture's Titanic tree:</p>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th class="r">Actually did not survive</th><th class="r">Actually survived</th></tr></thead>
+    <tbody>
+      <tr><td><b>Predicted not survived</b></td><td class="r"><b>1470</b> ✓ correct</td><td class="r">441 ✗ missed</td></tr>
+      <tr><td><b>Predicted survived</b></td><td class="r">20 ✗ false alarm</td><td class="r"><b>270</b> ✓ correct</td></tr>
+    </tbody>
+  </table></div>
+<pre>accuracy &lt;- sum(diag(confMatrix)) / sum(confMatrix)
+<span class="c"># (1470 + 270) / 2201 = 0.7905    the diagonal is the correct guesses</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>confMatrix</dt><dd>The table of predicted vs actual values shown above, made with <code>table(predicted, actual)</code>.</dd></div><div><dt>diag()</dt><dd>Takes the diagonal of a table: top-left to bottom-right. In a confusion matrix those are the correct predictions.</dd></div><div><dt>sum(diag(m)) / sum(m)</dt><dd>Correct predictions divided by all predictions, which is the accuracy.</dd></div></dl></div>
+  <p>Is 79% good? Compare it with a lazy model that always guesses the most common class. 1,490 of 2,201 people did not survive, so "always guess no" is already right 67.7% of the time. That number is the <b>No Information Rate (NIR)</b>.</p>
+<pre>confusionMatrix(predictValues, testSet$Survived)   <span class="c"># from caret</span>
+<span class="c">#             Accuracy : 0.7955</span>
+<span class="c">#               95% CI : (0.7547, 0.8322)</span>
+<span class="c">#  No Information Rate : 0.6773</span>
+<span class="c">#  P-Value [Acc &gt; NIR] : 2.382e-08</span></pre>
+  <div class="new"><span class="newh">New in this code</span><dl><div><dt>confusionMatrix(pred, actual)</dt><dd>From the caret package (<code>library(caret)</code>): builds the confusion matrix and prints accuracy, NIR, the p-value and more in one go. Put the predictions first and the real answers second.</dd></div></dl></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Line</th><th>Plain words</th></tr></thead>
+    <tbody>
+      <tr><td>Accuracy</td><td>The share of test cases the model got right</td></tr>
+      <tr><td>95% CI</td><td>The range the true accuracy probably lies in</td></tr>
+      <tr><td>No Information Rate</td><td>The accuracy of always guessing the biggest class</td></tr>
+      <tr><td>P-Value [Acc &gt; NIR]</td><td>Is the model really better than that lazy guess? Below 0.05 means yes.</td></tr>
+      <tr><td>Kappa</td><td>Agreement beyond chance: 0 is no better than chance, 1 is perfect</td></tr>
+    </tbody>
+  </table></div>
+  <p class="plain">Titanic: p = 0.00000002, so the tree is truly better than guessing. German Credit SVM: accuracy 0.735 against an NIR of 0.70 with p = 0.158, so it is <b>not</b> significantly better, even though 73.5% sounds good.</p>
+  <div class="why"><h3>The confusion matrix</h3><dl><div><dt>What it's for</dt><dd>Shows not just how often the model is right, but what kind of mistakes it makes.</dd></div><div><dt>How it works</dt><dd>Rows are what the model predicted and columns are what really happened. The diagonal is correct; the other two cells are the two kinds of error. On the Titanic, the model missed 441 survivors but raised only 20 false alarms.</dd></div><div><dt>Use it when</dt><dd>Mistakes have different costs. Missing a sick patient is worse than a false alarm, so you check which cell the errors fall in, not just the overall accuracy.</dd></div></dl></div>
+  <div class="why"><h3>Why compare with the NIR?</h3><dl><div><dt>What it's for</dt><dd>Stops you from being impressed by an accuracy that any lazy guess could reach.</dd></div><div><dt>How it works</dt><dd>If 70% of customers are “Good”, a model that says “Good” every time is already 70% accurate while learning nothing. Real skill is only the part above that. The P-Value [Acc &gt; NIR] checks whether the gap is bigger than luck.</dd></div><div><dt>Use it when</dt><dd>Always, for classification. The more lopsided the classes (99% not fraud), the more misleading accuracy alone becomes.</dd></div></dl></div>
+</section>
+
+<section id="fit">
+  <span class="num">16 · Training, testing and overfitting</span>
+  <h2>Why we test on new data</h2>
+  <ul>
+    <li><b>Training set:</b> the rows the model learns from. <b>Test set:</b> rows it has never seen, used to measure accuracy honestly. <code>createDataPartition(y, p = 0.80, list = FALSE)</code> picks 80% for training and keeps the class shares the same in both sets.</li>
+    <li><b>Overfitting:</b> the model learns the noise in the training data, so it scores well on training data and badly on new data. <b>Underfitting:</b> the model is too simple to catch the pattern.</li>
+    <li><b>Training error</b> is measured on the data the model learned from, so it is too optimistic. <b>Cross-validation error</b> (<code>cross = 3</code> in <code>ksvm</code>) holds back part of the training data in turns and is a fairer estimate.</li>
+  </ul>
+  <div class="why"><h3>Why a separate test set?</h3><dl><div><dt>What it's for</dt><dd>Gives an honest grade. A model graded on the questions it studied always looks better than it really is.</dd></div><div><dt>How it works</dt><dd>Hide some rows before training, train on the rest, then predict the hidden rows and compare with the real answers. Cross-validation repeats this inside the training data: with <code>cross = 3</code> it trains on two-thirds, tests on the last third, rotates three times and averages the errors.</dd></div><div><dt>Use it when</dt><dd>Every time you report how good a classification or prediction model is. Training accuracy alone can't detect overfitting.</dd></div><div><dt>Real example</dt><dd>A student who memorizes last year's exam answers scores 100% on that paper and fails a new one. That student is an overfitted model.</dd></div></dl></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Setting</th><th>Higher value</th><th>Lower value</th></tr></thead>
+    <tbody>
+      <tr><td>SVM cost <code>C</code></td><td>Fewer training mistakes, smaller margin, lower training error, more overfitting, higher cross-validation error</td><td>Wider margin, more general model, higher training error, lower cross-validation error</td></tr>
+      <tr><td>Tree <code>cp</code> (complexity parameter)</td><td>A bigger penalty per split, so a smaller, simpler tree</td><td>More splits, so a bigger tree that can overfit</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- CHEAT -->
+<section id="cheat">
+  <span class="num">Cheat sheet</span>
+  <h2>Every function on one table</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Function</th><th>In plain words</th><th>For <code>c(0,0,0,2,3,4,5)</code></th></tr></thead>
+    <tbody>
+      <tr><td><code>mean(x)</code></td><td>Average</td><td>2</td></tr>
+      <tr><td><code>median(x)</code></td><td>Middle value after sorting</td><td>2</td></tr>
+      <tr><td><code>names(which.max(table(x)))</code></td><td>Mode: most common value</td><td>"0"</td></tr>
+      <tr><td><code>mode(x)</code></td><td>The data <b>type</b>, not the mode</td><td>"numeric"</td></tr>
+      <tr><td><code>min(x)</code>, <code>max(x)</code></td><td>Smallest, biggest</td><td>0, 5</td></tr>
+      <tr><td><code>range(x)</code></td><td>Both ends at once</td><td>0 5</td></tr>
+      <tr><td><code>var(x)</code></td><td>Average squared distance from the mean (n − 1)</td><td>4.33</td></tr>
+      <tr><td><code>sd(x)</code></td><td>Typical distance from the mean, in real units</td><td>2.08</td></tr>
+      <tr><td><code>quantile(x)</code></td><td>Cut points at 0, 25, 50, 75, 100%</td><td>0 0 2 3.5 5</td></tr>
+      <tr><td><code>IQR(x)</code></td><td>Q3 − Q1: spread of the middle half</td><td>3.5</td></tr>
+      <tr><td><code>summary(x)</code></td><td>Min, Q1, median, mean, Q3, max</td><td>0 0 2 2 3.5 5</td></tr>
+      <tr><td><code>table(x)</code></td><td>Count of each value</td><td>0:3, 2:1, 3:1, 4:1, 5:1</td></tr>
+      <tr><td><code>length(x)</code></td><td>How many values</td><td>7</td></tr>
+      <tr><td><code>hist(x)</code>, <code>boxplot(x)</code></td><td>Pictures of shape and spread</td><td>a plot</td></tr>
+      <tr><td><code>cor(x, y)</code></td><td>How strongly two columns move together</td><td>−1 to +1</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Sampling and models</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Function or term</th><th>In plain words</th></tr></thead>
+    <tbody>
+      <tr><td><code>sample(x, size, replace = TRUE)</code></td><td>Draw random values, putting each one back</td></tr>
+      <tr><td><code>set.seed(n)</code></td><td>Make random results repeatable</td></tr>
+      <tr><td><code>rbinom(n, size, prob)</code></td><td>Random two-outcome results, like coin flips</td></tr>
+      <tr><td><code>rnorm(n, mean, sd)</code></td><td>Random numbers from a bell curve</td></tr>
+      <tr><td><code>replicate(k, expr)</code></td><td>Run the same thing k times and keep every result</td></tr>
+      <tr><td>LLN</td><td>More observations bring you closer to the true value (accuracy)</td></tr>
+      <tr><td>CLT</td><td>Many sample means form a bell curve (shape)</td></tr>
+      <tr><td><code>quantile(means, c(0.025, 0.975))</code></td><td>The middle 95% of the sampling distribution</td></tr>
+      <tr><td><code>lm(y ~ x1 + x2, data)</code></td><td>Fit a linear regression</td></tr>
+      <tr><td>Estimate / coefficient</td><td>Change in Y for one more unit of that X</td></tr>
+      <tr><td>Pr(&gt;|t|), p-value</td><td>Below 0.05 means significant</td></tr>
+      <tr><td>R-squared</td><td>The share of Y's variation the model explains</td></tr>
+      <tr><td><code>predict(model, newdata = df)</code></td><td>Use the model on new rows</td></tr>
+      <tr><td>Accuracy</td><td>Correct predictions ÷ all predictions</td></tr>
+      <tr><td>No Information Rate</td><td>The accuracy of always guessing the biggest class</td></tr>
+      <tr><td>P-Value [Acc &gt; NIR]</td><td>Below 0.05 means the model beats guessing</td></tr>
+      <tr><td>Overfitting</td><td>Great on training data, bad on new data</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <span class="num">Quiz</span>
+  <h2>Sixteen questions, exam style</h2>
+  <p>Answer on paper first, then open each answer.</p>
+  <div class="quiz">
+    <div class="qq"><p><b>1.</b> What does <code>median(c(9, 1, 5, 3))</code> return?</p>
+      <details><summary>Show answer</summary><div class="a"><p><code>4</code>. Sorted it is 1 3 5 9, an even count, so R averages the two middle values: (3 + 5) ÷ 2.</p></div></details></div>
+    <div class="qq"><p><b>2.</b> A student runs <code>mode(scores)</code> to find the most common score and gets <code>"numeric"</code>. Why, and what should they run?</p>
+      <details><summary>Show answer</summary><div class="a"><p><code>mode()</code> returns the data type. Use <code>names(which.max(table(scores)))</code>.</p></div></details></div>
+    <div class="qq"><p><b>3.</b> House prices in a town have a mean of $450k and a median of $310k. What shape is the distribution, and which number better describes a typical house?</p>
+      <details><summary>Show answer</summary><div class="a"><p>Right skewed: a few very expensive houses pull the mean up. The <b>median</b> describes a typical house better.</p></div></details></div>
+    <div class="qq"><p><b>4.</b> Two classes both average 75. Class A has sd 3 and class B has sd 15. What does that tell you?</p>
+      <details><summary>Show answer</summary><div class="a"><p>Class A's scores sit close to 75. Class B's are spread out, with some much higher and some much lower.</p></div></details></div>
+    <div class="qq"><p><b>5.</b> What does <code>sd(c(7, 7, 7, 7))</code> return?</p>
+      <details><summary>Show answer</summary><div class="a"><p><code>0</code>. No value is any distance from the mean.</p></div></details></div>
+    <div class="qq"><p><b>6.</b> Why do we usually report the standard deviation instead of the variance?</p>
+      <details><summary>Show answer</summary><div class="a"><p>The sd is in the same units as the data (inches, tons). The variance is in squared units, which are hard to picture.</p></div></details></div>
+    <div class="qq"><p><b>7.</b> What does this return?</p><pre>mean(c(10, NA, 20))</pre>
+      <details><summary>Show answer</summary><div class="a"><p><code>NA</code>. Add <code>na.rm = TRUE</code> to get <code>15</code>.</p></div></details></div>
+    <div class="qq"><p><b>8.</b> Write one line of base R that gives the mean <code>Temp</code> for each <code>Month</code> in <code>airquality</code>.</p>
+      <details><summary>Show answer</summary><div class="a"><pre>tapply(airquality$Temp, airquality$Month, mean)
+aggregate(Temp ~ Month, data = airquality, mean)   <span class="c"># also correct</span></pre><p>August (84.0) is just warmer than July (83.9).</p></div></details></div>
+    <div class="qq"><p><b>9.</b> You flip a fair coin 10 times and get 7 heads. Then you flip it 100,000 times and get 50.01% heads. Which idea explains this?</p>
+      <details><summary>Show answer</summary><div class="a"><p>The <b>Law of Large Numbers</b>: with more observations, the result moves toward the true value of 0.5.</p></div></details></div>
+    <div class="qq"><p><b>10.</b> Population incomes are strongly right-skewed. You take 2,000 samples of size 50 and draw a histogram of their means. What shape do you expect, and which idea says so?</p>
+      <details><summary>Show answer</summary><div class="a"><p>A bell (normal) shape, by the <b>Central Limit Theorem</b>, even though the incomes themselves are skewed.</p></div></details></div>
+    <div class="qq"><p><b>11.</b> What does this code do, in words?</p><pre>replicate(500, mean(sample(pop, size = 10, replace = TRUE)))</pre>
+      <details><summary>Show answer</summary><div class="a"><p>It draws 10 values from <code>pop</code> with replacement, takes their mean, and repeats that 500 times. You get 500 sample means: a sampling distribution.</p></div></details></div>
+    <div class="qq"><p><b>12.</b> The middle 95% of your sample means runs from 2,332 to 6,656. A new sample has a mean of 5,100. Is it unusual?</p>
+      <details><summary>Show answer</summary><div class="a"><p>No. 5,100 is inside the middle 95%, so a sample like it could easily come from the same population.</p></div></details></div>
+    <div class="qq"><p><b>13.</b> In <code>summary(lm(price ~ size, data = houses))</code> the size Estimate is 150 with Pr(&gt;|t|) = 0.002. Interpret it.</p>
+      <details><summary>Show answer</summary><div class="a"><p>Each extra unit of size adds about 150 to the predicted price, and p = 0.002 &lt; 0.05, so size is a significant predictor.</p></div></details></div>
+    <div class="qq"><p><b>14.</b> A model has an Adjusted R-squared of 0.25. What does that mean?</p>
+      <details><summary>Show answer</summary><div class="a"><p>The model explains only about 25% of the variation in the outcome. The other 75% comes from things the model doesn't include.</p></div></details></div>
+    <div class="qq"><p><b>15.</b> A model has Accuracy 0.72, No Information Rate 0.70 and P-Value [Acc &gt; NIR] 0.31. Is it a good model?</p>
+      <details><summary>Show answer</summary><div class="a"><p>No. Always guessing the biggest class already gets 70%, and p = 0.31 &gt; 0.05, so the model is not significantly better than that.</p></div></details></div>
+    <div class="qq"><p><b>16.</b> An SVM has a training error of 0.02 but a cross-validation error of 0.35. What is happening, and which setting would you lower?</p>
+      <details><summary>Show answer</summary><div class="a"><p><b>Overfitting</b>: it memorized the training data. Lower the cost <code>C</code> to get a wider margin and a more general model.</p></div></details></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  const input=document.getElementById('nums'), stats=document.getElementById('stats'),
+        rcode=document.getElementById('rcode'), err=document.getElementById('err'), dots=document.getElementById('dots');
+  const fmt=v=>{ if(!isFinite(v)) return 'NA'; const r=Math.round(v*10000)/10000; return String(r); };
+  function q7(s,p){ const h=(s.length-1)*p, lo=Math.floor(h), hi=Math.ceil(h); return s[lo]+(h-lo)*(s[hi]-s[lo]); }
+  function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+  function render(){
+    const raw=input.value.split(/[,\s]+/).filter(t=>t!=='');
+    const bad=raw.filter(t=>isNaN(Number(t)));
+    if(bad.length){ err.hidden=false; err.textContent='“'+bad[0]+'” is not a number. Use digits separated by commas, like 3, 7, 12.'; return; }
+    const x=raw.map(Number);
+    if(x.length<2){ err.hidden=false; err.textContent='Type at least two numbers to see the spread.'; return; }
+    err.hidden=true;
+    const n=x.length, s=[...x].sort((a,b)=>a-b), sum=x.reduce((a,b)=>a+b,0), mean=sum/n;
+    const med=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;
+    const ss=x.reduce((a,v)=>a+(v-mean)**2,0), v=ss/(n-1), sd=Math.sqrt(v);
+    const cnt=new Map(); s.forEach(t=>cnt.set(t,(cnt.get(t)||0)+1));
+    let best=0; cnt.forEach(c=>{if(c>best)best=c;});
+    const modes=[...cnt].filter(([k,c])=>c===best).map(([k])=>k);
+    const modeTxt=best===1?'none (each value appears once)':modes.map(fmt).join(', ')+' ('+best+' times)';
+    const Q1=q7(s,0.25), Q3=q7(s,0.75);
+    const items=[['n = length(x)',n,''],['mean(x)',fmt(mean),'mean'],['median(x)',fmt(med),'med'],['mode',modeTxt,''],
+      ['range(x)',fmt(s[0])+' to '+fmt(s[n-1]),''],['var(x)',fmt(v),''],['sd(x)',fmt(sd),''],['IQR(x)',fmt(Q3-Q1),'']];
+    stats.innerHTML=items.map(([k,val,c])=>'<div class="st '+c+'"><span>'+k+'</span><b>'+esc(String(val))+'</b></div>').join('');
+    rcode.innerHTML='x &lt;- c('+esc(x.map(fmt).join(', '))+')\nsummary(x)\n<span class="c">#  Min. 1st Qu.  Median    Mean 3rd Qu.    Max.</span>\n<span class="c">#  '+
+      [s[0],Q1,med,mean,Q3,s[n-1]].map(t=>fmt(Math.round(t*1000)/1000)).join('   ')+'</span>\nsd(x)   <span class="c"># '+fmt(sd)+'</span>';
+    // dot plot
+    const W=640,H=120,L=30,R=610,lo=s[0],hi=s[n-1],span=(hi-lo)||1, sx=t=>L+(R-L)*(t-lo)/span;
+    const stack=new Map(); let out='<svg viewBox="0 0 '+W+' '+H+'"><line x1="'+L+'" x2="'+R+'" y1="86" y2="86" class="wh"/>';
+    s.forEach(t=>{ const k=t; const i=stack.get(k)||0; stack.set(k,i+1); out+='<circle cx="'+sx(t).toFixed(1)+'" cy="'+(76-i*13)+'" r="5.5" class="dot"/>'; });
+    out+='<text x="'+L+'" y="106" class="tick" text-anchor="start">'+esc(fmt(lo))+'</text><text x="'+R+'" y="106" class="tick" text-anchor="end">'+esc(fmt(hi))+'</text>';
+    const mx=sx(mean), dx=sx(med), close=Math.abs(mx-dx)<70;
+    out+='<line x1="'+dx.toFixed(1)+'" x2="'+dx.toFixed(1)+'" y1="14" y2="92" class="mk med"/><text x="'+(dx-5).toFixed(1)+'" y="'+(close?24:12)+'" class="lab med" text-anchor="end">median</text>';
+    out+='<line x1="'+mx.toFixed(1)+'" x2="'+mx.toFixed(1)+'" y1="14" y2="92" class="mk mean" stroke-dasharray="4 3"/><text x="'+(mx+5).toFixed(1)+'" y="12" class="lab mean" text-anchor="start">mean</text></svg>';
+    dots.innerHTML=out;
+  }
+  input.addEventListener('input',render);
+  document.querySelectorAll('.chips button').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.v;render();}));
+  render();
+})();
+</script>
+
+</html>

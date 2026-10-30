@@ -1,0 +1,291 @@
+---
+title: "IST 387 Midterm Practice Lab"
+author: "Naim Bin Hasan"
+output: pdf_document
+---
+
+```{r include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff = 80), tidy = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Intro to Data Science - Midterm Practice Lab (Weeks 1-9)
+
+This practice lab works like the weekly labs. Every question uses a data set that is already built into R or one of the course packages, so there is nothing to download. Write your code in each empty chunk and run it. Type your answers in the comment lines. When you are done, check your work against `midterm-practice-key.Rmd`.
+
+The exam is on paper, so try writing each answer on paper first, then type it here and check that it runs.
+
+Data sets used:
+
+* `mtcars` (base R): 32 cars and their specs
+* `airquality` (base R): daily air readings in New York, May to September 1973, with some missing values
+* `iris` (base R): flower measurements for three species
+* `state.x77` and `state.name` (base R): facts about the 50 US states
+* `economics` (ggplot2): US economic data by month
+* `GermanCredit` (caret): good and bad credit customers
+
+```{r}
+library(tidyverse)
+```
+
+---
+
+## Part 1: Vectors and lists (Weeks 1-2)
+
+1. Save the `Temp` column of `airquality` in a vector called `temps`. Find its length, mean and maximum. Then use `which.max()` to find which day had the highest temperature.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+2. How many days were hotter than 85 degrees? Use a logical test inside `sum()`. Then show only those temperatures.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+3. Before you run it, guess the mode of `c(1, "a", TRUE)`. Then check with `mode()`.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+4. Make a list called `car` that holds the name `"Mazda RX4"`, its `mpg` from `mtcars`, and the logical value `TRUE` for a manual gearbox. Get the mpg out of the list with `[[ ]]`. What do `car["mpg"]` and `car[["mpg"]]` each give back?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 2: Data frames in base R (Week 2)
+
+5. Make a copy of `mtcars` called `myCars`. Add a column called `name` that holds the row names. Then use `str()` and `dim()` to check it.
+
+```{r}
+
+```
+
+6. Show the names of the cars with `mpg` over 25.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+7. Add a column `kpl` (kilometers per liter), which is `mpg * 0.425`. Then remove the `qsec` column.
+
+```{r}
+
+```
+
+8. Sort `myCars` by `hp` from highest to lowest and show the name and hp of the top five cars.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+9. How many values of `Ozone` in `airquality` are missing? What is the mean `Ozone` when you skip them?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 3: Tidyverse (Week 3)
+
+10. Using `airquality`, find the mean `Temp` for each `Month`, first with `group_by()` and `summarize()`, then with `aggregate()`.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+11. Add a column `hot` that says "hot" when `Temp` is over 80 and "mild" otherwise. Count each label with `table()`.
+
+```{r}
+
+```
+
+12. Using `iris`, keep only the `setosa` flowers, keep only the two `Petal` columns, and sort by `Petal.Length` from longest to shortest.
+
+```{r}
+
+```
+
+13. What is the difference between `group_by()` followed by `summarize()` and `group_by()` followed by `mutate()`? Try both on `iris` with the mean `Sepal.Length` by `Species`.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 4: Functions (Week 3)
+
+14. Write a function called `printVecInfo` that takes a vector and prints its mean, median, min, max, standard deviation, and the 0.05 and 0.95 quantiles. Test it on `mtcars$mpg`.
+
+```{r}
+
+```
+
+15. Write a function `countAbove(df, colName, cutoff)` that returns how many rows of `df` have a value above `cutoff` in the column called `colName`. Test it with `countAbove(mtcars, "hp", 200)`.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 5: Sampling, the LLN and the CLT (Weeks 4-5)
+
+16. Flip a fair coin 10 times with `rbinom(10, 1, 0.5)` and find the mean. Do the same with 100,000 flips. Which law explains the difference?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+17. Use `replicate()` to take 1,000 samples of 10 values from `mtcars$mpg` (with replacement) and save the 1,000 sample means. Make a histogram of the sample means and compare their mean with the population mean.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+18. Find the 2.5% and 97.5% quantiles of `sampleMeans`. A mystery sample of 10 cars has a mean mpg of 25. Does it look like it came from `mtcars`?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 6: Importing data (Week 6)
+
+19. Write `mtcars` to a CSV file with `write_csv()`, then read it back in with `read_csv()`. What happened to the car names?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+20. Turn the first three rows of `mtcars` into JSON with `jsonlite::toJSON()`, then turn it back with `fromJSON()`. What kind of object comes back?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 7: ggplot2 (Weeks 6-7)
+
+21. Make a histogram of `Temp` from `airquality`.
+
+```{r}
+
+```
+
+22. Make a scatter plot of `wt` (x) against `mpg` (y) from `mtcars`, colored by `cyl`, with a straight trend line.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+23. Make a box plot of `mpg` for each number of cylinders. Then make a bar chart of how many cars have each number of cylinders.
+
+```{r}
+
+```
+
+24. Make a line chart of `unemploy` over `date` from `economics`, with a title.
+
+```{r}
+
+```
+
+---
+
+## Part 8: Maps (Week 7)
+
+25. Turn `state.x77` into a data frame, add a `state` column with lowercase state names, and merge it with `map_data("state")`. Then draw a map of the states filled by `Income`.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 9: Linear regression (Week 8)
+
+26. Fit a model that predicts `mpg` from `wt` and `hp`. Look at the summary. Which predictors are significant, and what is the R-squared?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+27. Use the model to predict the mpg of a car with `wt = 3` and `hp = 150`.
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+---
+
+## Part 10: Trees and SVMs (Week 9)
+
+28. Load `GermanCredit` from `{caret}` and keep the first 10 columns. Split it into 70% training and 30% testing data with `createDataPartition()`.
+
+```{r}
+
+```
+
+29. Train a tree with `rpart()` to predict `Class`, plot it with `prp()`, and test it with `confusionMatrix()`. Is the accuracy better than the No Information Rate?
+
+```{r}
+
+```
+
+> *Type your answer here.*
+
+30. Train an SVM with `ksvm()` on the same training data, with `C = 5` and 3-fold cross validation. Test it with `confusionMatrix()`. Which model did better?
+
+```{r}
+
+```
+
+> *Type your answer here.*
