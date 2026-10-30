@@ -2,6 +2,8 @@
 
 **Author:** Naim Bin Hasan
 
+**Read it online:** https://naimbh.github.io/IST387-Intro-to-Data-Science/
+
 This is a plain-language study companion for IST 387 (Introduction to Data Science) at Syracuse University. It is written for students who are new to R and statistics. Every function, symbol and term is explained the first time it appears, and every code output was checked in R.
 
 It is an **unofficial** resource. It does not contain any lecture slides, homework, labs, exams or other original course materials. Use it alongside the course, not instead of it, and follow the course's academic integrity policy.
