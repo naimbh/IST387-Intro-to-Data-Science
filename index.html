@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IST 387 Study Companion</title>
+<meta name="author" content="Naim Bin Hasan">
+<meta name="description" content="Plain-language study guides and practice for IST 387: Introduction to Data Science at Syracuse University.">
+<style>
+:root{--bg:#F4F6F9;--surface:#FFFFFF;--ink:#17202B;--muted:#596577;--line:#DCE2EA;--accent:#1F5FBF;--accent-soft:#E7EEFA}
+@media (prefers-color-scheme: dark){:root{--bg:#0F141B;--surface:#161D27;--ink:#E7EBF1;--muted:#9BA7B6;--line:#263142;--accent:#7EA9F2;--accent-soft:#1A2A45;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Helvetica Neue",Arial,system-ui,sans-serif;font-size:17px;line-height:1.6;padding:48px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-size:clamp(2rem,6vw,2.8rem);line-height:1.1;margin:0;letter-spacing:-0.02em}
+h2{font-size:1.2rem;margin:0}
+p{margin:0}
+.eyebrow{font-size:0.78rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+a.card{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);outline:none}
+a.card b{color:var(--accent)}
+.note{background:var(--accent-soft);border-radius:10px;padding:12px 16px;font-size:0.95rem}
+a{color:var(--accent)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:0.9em}
+</style>
+</head>
+<body>
+<main>
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">Syracuse University · IST 387</span>
+    <h1>Introduction to Data Science: study companion</h1>
+    <p><b>By Naim Bin Hasan</b></p>
+    <p class="muted">Plain-language guides to R and statistics for this course. Every function and term is explained the first time it appears, and every code output was checked in R.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Guides</h2>
+    <div class="cards">
+      <a class="card" href="guides/r-guide.html"><b>R study guide</b><span class="muted">Every week explained, with quizzes, hand-writing drills and a timed mock exam.</span></a>
+      <a class="card" href="guides/statistics.html"><b>Statistics in R</b><span class="muted">Descriptive stats, sampling, LLN and CLT, regression and model accuracy, with an interactive calculator.</span></a>
+      <a class="card" href="guides/r-crash-course.html"><b>R crash course</b><span class="muted">A shorter version for a quick review.</span></a>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Practice in RStudio</h2>
+    <p>A 30-question practice lab in the same format as the weekly labs, using only data sets built into R: <a href="https://github.com/naimbh/IST387-Intro-to-Data-Science/blob/main/practice/midterm-practice.Rmd">midterm-practice.Rmd</a>, with an <a href="https://github.com/naimbh/IST387-Intro-to-Data-Science/blob/main/practice/midterm-practice-key.Rmd">answer key</a>.</p>
+  </section>
+
+  <p class="note">This is an unofficial resource. It contains no lecture slides, homework, labs or exams. Use it alongside the course and follow its academic integrity policy. Weeks 1–9 are covered; later weeks will be added as the course goes on. Source on <a href="https://github.com/naimbh/IST387-Intro-to-Data-Science">GitHub</a>.</p>
+</main>
+</body>
+</html>
