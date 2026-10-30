@@ -206,7 +206,7 @@ df$score[3]        <span class="c"># 85</span>
 df[df$score &lt; 90, "name"]   <span class="c"># "Ana" "Cy"  (a WHERE inside the brackets)</span></pre>
     <div class="sql"><b>SQL brain:</b> <code>df[rows, cols]</code>. A blank before the comma means every row, and a blank after it means every column.</div>
     <p>Look at a data frame with <code>str(df)</code>, <code>summary(df)</code> (min, quartiles, mean, max for each column), <code>head(df)</code>, <code>nrow(df)</code> and <code>View(df)</code>.</p>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>data.frame()</dt><dd>Builds a table from vectors of the same length. Each vector becomes a column, and its name becomes the column name.</dd></div><div><dt>df[2, ]</dt><dd><code>[row, column]</code>: row 2, and the blank after the comma means all columns.</dd></div><div><dt>df[ , "score"]</dt><dd>The blank before the comma means all rows, and <code>"score"</code> picks that column by name.</dd></div><div><dt>df$score[3]</dt><dd><code>$</code> picks one column as a vector (like <code>-&gt;</code> in PHP), then <code>[3]</code> takes its third value.</dd></div><div><dt>df$score &lt; 90</dt><dd>Tests every value and returns TRUE or FALSE for each row: <code>TRUE FALSE TRUE</code>. Put inside the row slot, it keeps only the TRUE rows, like a WHERE clause.</dd></div><div><dt>str(df)</dt><dd><b>str</b>ucture: shows each column's name, type and first few values, like <code>DESCRIBE</code> in MySQL.</dd></div><div><dt>summary(df)</dt><dd>Prints min, quartiles, median, mean and max for every numeric column.</dd></div><div><dt>head(df)</dt><dd>Shows the first 6 rows.</dd></div><div><dt>nrow(df)</dt><dd>The number of rows.</dd></div><div><dt>View(df)</dt><dd>Opens the table in a spreadsheet-style viewer in RStudio. Remove it before you knit.</dd></div></dl></div>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>data.frame()</dt><dd>Builds a table from vectors of the same length. Each vector becomes a column, and its name becomes the column name.</dd></div><div><dt>df[2, ]</dt><dd><code>[row, column]</code>: row 2, and the blank after the comma means all columns.</dd></div><div><dt>df[ , "score"]</dt><dd>The blank before the comma means all rows, and <code>"score"</code> picks that column by name.</dd></div><div><dt>df$score[3]</dt><dd><code>$</code> picks one column as a vector (like <code>-&gt;</code> in PHP), then <code>[3]</code> takes its third value.</dd></div><div><dt>df$score &lt; 90</dt><dd>Tests every value and returns TRUE or FALSE for each row: <code>TRUE FALSE TRUE</code>. Put inside the row slot, it keeps only the TRUE rows, like a WHERE clause.</dd></div><div><dt>str(df)</dt><dd><b>str</b>ucture: shows each column's name, type and first few values, like <code>DESCRIBE</code> in MySQL.</dd></div><div><dt>summary(df)</dt><dd>Prints min, quartiles, median, mean and max for every numeric column.</dd></div><div><dt>head(df)</dt><dd>Shows the first 6 rows.</dd></div><div><dt>nrow(df)</dt><dd>The number of rows.</dd></div><div><dt>View(df)</dt><dd>Opens the table in a spreadsheet-style viewer in RStudio. Remove it before you knit (turn your R Markdown file into a finished report), or knitting can fail.</dd></div></dl></div>
   </div>
 
   <div class="card">
@@ -218,7 +218,7 @@ df %&gt;% slice(c(1, 3))            <span class="c"># rows 1 and 3</span>
 df %&gt;% mutate(pct = score / 100)
 
 pets %&gt;% group_by(type) %&gt;% summarize(avgAge = mean(age))</pre>
-    <p class="warn"><b>Watch out:</b> after <code>filter()</code>, the rows are renumbered from 1. <code>df[2, ]</code> keeps the original row label "2".</p>
+    <p class="warn"><b>Watch out:</b> after <code>filter()</code>, the rows are renumbered from 1. Both <code>df %&gt;% filter(score &gt; 80)</code> and <code>df[df$score &gt; 80, ]</code> keep Ben and Cy, but <code>filter()</code> labels them rows 1 and 2, while the bracket version keeps their original labels, 2 and 3.</p>
     <div class="new"><span class="newh">New in this code</span><dl><div><dt>library(tidyverse)</dt><dd>These verbs come from the dplyr package. Load them first with <code>library(tidyverse)</code>, or R says “could not find function”.</dd></div><div><dt>%&gt;%</dt><dd>The pipe: passes the result on its left into the function on its right. Read it as “then”, like chaining methods in Laravel.</dd></div><div><dt>filter()</dt><dd>Keeps the rows that pass a test, like SQL <code>WHERE</code>.</dd></div><div><dt>arrange()</dt><dd>Sorts the rows, like <code>ORDER BY</code>. Wrap a column in <code>desc()</code> to sort from high to low.</dd></div><div><dt>select()</dt><dd>Keeps only the columns you name, like <code>SELECT name</code>.</dd></div><div><dt>slice()</dt><dd>Keeps rows by position. <code>c(1, 3)</code> means rows 1 and 3.</dd></div><div><dt>mutate()</dt><dd>Adds a new column (or changes one) calculated from the others. <code>pct = score / 100</code> names the new column pct.</dd></div><div><dt>group_by()</dt><dd>Marks the groups, like SQL <code>GROUP BY</code>. It doesn't change any numbers by itself.</dd></div><div><dt>summarize()</dt><dd>Calculates one row per group. <code>avgAge = mean(age)</code> names the new column. <code>pets</code> is a small table of pets with a type and an age (see mock question 4).</dd></div></dl></div>
   </div>
 
@@ -273,19 +273,21 @@ x[3]</pre>
 
   <div class="card">
     <h3>Population vs. sample</h3>
-    <p>The <b>population</b> is everyone (all 50 states). A <b>sample</b> is the part you actually measure. We use samples to guess things about the population, which is called <b>inference</b>.</p>
-<pre>sample(stateDF$population, size = 16)          <span class="c"># 16 random states</span>
+    <p>The <b>population</b> is everyone (all 50 states). A <b>sample</b> is the part you actually measure. We use samples to guess things about the population, which is called <b>inference</b>. Here the question is: if you measured only 16 random states, how close would their average population be to the true average of all 50?</p>
+<pre>stateDF &lt;- data.frame(state = state.name, population = state.x77[, "Population"])
+mean(stateDF$population)                       <span class="c"># 4246.42, the true mean of all 50</span>
+sample(stateDF$population, size = 16)          <span class="c"># 16 random states</span>
 mean(sample(stateDF$population, size = 16))    <span class="c"># one sample mean</span>
 replicate(2000, mean(sample(stateDF$population, 16)))  <span class="c"># 2000 sample means</span>
 rbinom(n = 8, size = 1, prob = 0.5)            <span class="c"># 8 coin flips: 0/1</span></pre>
     <div class="sql"><b>Think of <code>replicate()</code></b> as a loop that runs the same line 2000 times and collects every result into a vector.</div>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>stateDF</dt><dd>A data frame of the 50 US states and their populations (in thousands), built in the lecture from R's built-in <code>state.x77</code> table.</dd></div><div><dt>sample(x, size = 16)</dt><dd>Picks 16 random values from x. Without <code>replace = TRUE</code> each value can be picked only once; with it, values are put back and can repeat.</dd></div><div><dt>mean(sample(…))</dt><dd>A function inside a function: R runs the inside first (draw the sample), then takes its mean.</dd></div><div><dt>rbinom(n, size, prob)</dt><dd><b>R</b>andom <b>binom</b>ial: random results for two-outcome events. With <code>size = 1</code>, each of the n results is one 0 or 1, and <code>prob</code> is the chance of a 1, like a coin flip.</dd></div></dl></div>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>stateDF</dt><dd>A data frame with one row per US state: its name and its 1975 population in thousands. The first line builds it from two tables that come with R: <code>state.name</code> (the 50 names) and <code>state.x77</code> (facts about each state).</dd></div><div><dt>sample(x, size = 16)</dt><dd>Picks 16 random values from x. Without <code>replace = TRUE</code> each value can be picked only once; with it, values are put back and can repeat.</dd></div><div><dt>mean(sample(…))</dt><dd>A function inside a function: R runs the inside first (draw the sample), then takes its mean.</dd></div><div><dt>rbinom(n, size, prob)</dt><dd><b>R</b>andom <b>binom</b>ial: random results for two-outcome events. With <code>size = 1</code>, each of the n results is one 0 or 1, and <code>prob</code> is the chance of a 1, like a coin flip.</dd></div></dl></div>
   </div>
 
   <div class="card">
     <h3>Two laws you must be able to explain</h3>
     <ul>
-      <li><b>Law of Large Numbers:</b> the more samples you take, the closer their average gets to the true population mean.</li>
+      <li><b>Law of Large Numbers:</b> the bigger your sample, the closer its mean gets to the true population mean. Flip a fair coin 10 times and you might get 70% heads; flip it 10,000 times and you will get very close to 50%.</li>
       <li><b>Central Limit Theorem (CLT):</b> if you take many sample means, their histogram looks like a <b>normal bell curve</b> centered on the population mean, even if the population itself is skewed. Bigger samples make that bell narrower.</li>
     </ul>
   </div>
@@ -293,9 +295,16 @@ rbinom(n = 8, size = 1, prob = 0.5)            <span class="c"># 8 coin flips: 0
   <div class="card">
     <h3>Quantiles and the "mystery sample"</h3>
 <pre>quantile(1:100, c(0.25, 0.75))     <span class="c"># 25.75 and 75.25</span>
-quantile(sampleMeans, c(0.025, 0.975))   <span class="c"># middle 95% of sample means</span></pre>
+
+set.seed(1)
+sampleMeans &lt;- replicate(2000, mean(sample(stateDF$population, 16)))
+quantile(sampleMeans, c(0.025, 0.975))   <span class="c"># about 2583 and 6137: the middle 95%</span>
+mystery &lt;- c(333, 1088, 3699, 3805, 3135, 3390, 99, 1049,
+             235, 129, 4299, 3649, 2295, 4663, 1837, 2711)
+mean(mystery)                            <span class="c"># 2276</span></pre>
     <p>A <b>quantile</b> is a percentile written as a decimal; the median is the 0.5 quantile. To test a mystery sample, build a distribution of sample means from the real population. If the mystery sample's mean falls <b>outside the middle 95%</b>, it probably didn't come from that population. That's statistical inference in a nutshell.</p>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>1:100</dt><dd>The colon makes a sequence of whole numbers: 1, 2, 3, … 100.</dd></div><div><dt>quantile(x, c(…))</dt><dd>Returns the cut points you ask for. <code>c(0.25, 0.75)</code> asks for the 25% and 75% points of the sorted data.</dd></div><div><dt>sampleMeans</dt><dd>A vector of many sample means, made with <code>replicate()</code> as in the card above.</dd></div></dl></div>
+    <p><b>Example:</b> someone gives you the 16 numbers in <code>mystery</code> and says they are the populations (in thousands) of 16 random US states. Is that believable? The middle 95% of the 2000 simulated means of 16 real states runs from about 2583 to 6137, but the mystery mean is only 2276. It falls outside the middle 95%, so the numbers probably did not come from US states.</p>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>1:100</dt><dd>The colon makes a sequence of whole numbers: 1, 2, 3, … 100.</dd></div><div><dt>quantile(x, c(…))</dt><dd>Returns the cut points you ask for. <code>c(0.25, 0.75)</code> asks for the 25% and 75% points of the sorted data.</dd></div><div><dt>sampleMeans</dt><dd>A vector of 2000 sample means, each the mean of 16 random states from <code>stateDF</code> (built in the population card above).</dd></div><div><dt>set.seed(1)</dt><dd>Makes the random draws repeatable, so you get the same 2583 and 6137. A different seed gives slightly different numbers.</dd></div></dl></div>
   </div>
 
   <div class="card">
@@ -304,10 +313,13 @@ quantile(sampleMeans, c(0.025, 0.975))   <span class="c"># middle 95% of sample 
 df &lt;- read_excel("file.xlsx")       <span class="c"># readxl package</span>
 df &lt;- df %&gt;% rename(newName = oldName) %&gt;% slice(-1:-8)   <span class="c"># drop junk rows</span>
 
+library(RCurl)
 library(jsonlite)
+bikeURL &lt;- "https://gbfs.citibikenyc.com/gbfs/en/station_status.json"
 apiResult &lt;- getURL(bikeURL)        <span class="c"># fetch the API text</span>
 data &lt;- fromJSON(apiResult)         <span class="c"># parse it, like json_decode()</span>
 stations &lt;- data$data$stations      <span class="c"># dig into the nested JSON with $</span></pre>
+    <p>The third line fixes a messy spreadsheet: suppose its first 8 rows are titles and notes rather than data, and one column has the unclear name <code>oldName</code>. The last block asks New York's Citi Bike system how many bikes each station has right now. Its JSON looks like <code>{"data": {"stations": [ … ]}}</code>, so <code>data$data$stations</code> becomes a data frame with one row per station and columns such as <code>num_bikes_available</code>.</p>
     <p class="warn"><b>Data types to name:</b> structured (tables, SQL) and unstructured (text, images). JSON is the format web APIs use. SQL databases are good for transactional data (many small reads and writes).</p>
     <div class="new"><span class="newh">New in this code</span><dl><div><dt>read_csv()</dt><dd>From readr (loaded by <code>library(tidyverse)</code>): reads a CSV file into a tibble, the tidyverse's version of a data frame.</dd></div><div><dt>read_excel()</dt><dd>From the readxl package (<code>library(readxl)</code>): reads an .xlsx sheet into a tibble.</dd></div><div><dt>rename(new = old)</dt><dd>From dplyr: changes a column's name. The new name goes on the left.</dd></div><div><dt>slice(-1:-8)</dt><dd>A minus inside <code>slice()</code> drops rows, so this removes rows 1 to 8 (junk header rows in a spreadsheet).</dd></div><div><dt>library()</dt><dd>Loads an installed package for this session, like <code>use</code> in PHP. Install it once first with <code>install.packages()</code>.</dd></div><div><dt>getURL()</dt><dd>From the RCurl package: downloads a web page or API response and returns it as one long piece of text.</dd></div><div><dt>fromJSON()</dt><dd>From jsonlite: turns JSON text into R lists or a data frame, like <code>json_decode()</code>.</dd></div><div><dt>data$data$stations</dt><dd>Chained <code>$</code> digs into nested lists, like <code>$data-&gt;data-&gt;stations</code> in PHP.</dd></div></dl></div>
   </div>
@@ -317,12 +329,13 @@ stations &lt;- data$data$stations      <span class="c"># dig into the nested JSO
 <pre>ggplot(mpg, aes(x = displ, y = hwy)) +   <span class="c"># data + which columns go where</span>
   geom_point() +                          <span class="c"># the shape: scatter plot</span>
   ggtitle("Engine size vs highway mpg")</pre>
+    <p>The question: do cars with bigger engines get fewer miles per gallon on the highway? The dots slope downward, so yes: bigger engines tend to mean lower mileage.</p>
     <ul>
       <li><b>Three parts:</b> the data, the <code>aes()</code> mapping (x, y, color, fill, size), and the <code>geom_</code> shape.</li>
       <li><code>geom_histogram()</code> shows one numeric variable, <code>geom_bar()</code> counts per category, <code>geom_col()</code> draws bars from values you supply, <code>geom_boxplot()</code> compares groups, and <code>geom_line()</code> shows change over time.</li>
       <li><b>Good chart rules:</b> bars start at zero, no 3D pie charts, cut clutter, use sensible and accessible colors. Most jobs need only a <b>bar, line or scatter</b> chart.</li>
     </ul>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>mpg</dt><dd>A built-in ggplot2 table of 234 cars. <code>displ</code> is engine size in litres, and <code>hwy</code> is highway miles per gallon.</dd></div><div><dt>ggplot(data, aes())</dt><dd>Starts a chart: the data frame to use, and <code>aes()</code> (aesthetics) to say which column goes on x, y, color and so on. Needs <code>library(tidyverse)</code>.</dd></div><div><dt>+</dt><dd>Adds a layer to a ggplot chart. ggplot uses <code>+</code>, not <code>%&gt;%</code>.</dd></div><div><dt>geom_point()</dt><dd>A <b>geom</b>etric shape layer: draws one dot per row, which makes a scatter plot.</dd></div><div><dt>ggtitle()</dt><dd>Adds a title to the chart.</dd></div></dl></div>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>mpg</dt><dd>A built-in ggplot2 table of 234 cars. <code>displ</code> is engine size in liters, and <code>hwy</code> is highway miles per gallon.</dd></div><div><dt>ggplot(data, aes())</dt><dd>Starts a chart: the data frame to use, and <code>aes()</code> (aesthetics) to say which column goes on x, y, color and so on. Needs <code>library(tidyverse)</code>.</dd></div><div><dt>+</dt><dd>Adds a layer to a ggplot chart. ggplot uses <code>+</code>, not <code>%&gt;%</code>.</dd></div><div><dt>geom_point()</dt><dd>A <b>geom</b>etric shape layer: draws one dot per row, which makes a scatter plot.</dd></div><div><dt>ggtitle()</dt><dd>Adds a title to the chart.</dd></div></dl></div>
   </div>
 
   <div class="card">
@@ -335,6 +348,7 @@ ggplot(us) +
 
 merged &lt;- merge(myData, us, by.x = "stateName", by.y = "region")</pre>
     <ul>
+      <li><code>myData</code> is your own table with one row per state, such as a <code>stateName</code> column and a <code>population</code> column. The merge adds those values to the map points, so you can color each state. The names must be lowercase, like <code>"new york"</code>, to match <code>region</code>.</li>
       <li><code>group = group</code> tells ggplot which points belong to the same shape. Without it the outlines turn into spaghetti.</li>
       <li>A <b>choropleth</b> map colors areas by a value: <code>aes(fill = population)</code>.</li>
       <li>Add points with <code>geom_point(aes(x = lon, y = lat))</code>.</li>
@@ -346,13 +360,13 @@ merged &lt;- merge(myData, us, by.x = "stateName", by.y = "region")</pre>
 
   <h3>Quiz 2</h3>
   <div class="quiz" data-quiz="q2">
-    <div class="q"><span class="num">Q1</span><p>In plain words, what does this create?</p><pre>replicate(1000, mean(sample(pop, size = 10)))</pre>
+    <div class="q"><span class="num">Q1</span><p><code>pop</code> is a vector with one value for every member of a population, such as the heights of all 5,000 students at a school. In plain words, what does this create?</p><pre>replicate(1000, mean(sample(pop, size = 10)))</pre>
       <details><summary>Show answer</summary><div class="ans"><p>A vector of <b>1000 sample means</b>, each from 10 random values. Its histogram is a <b>sampling distribution</b>, which by the CLT looks roughly normal and is centered on the population mean.</p></div></details></div>
-    <div class="q"><span class="num">Q2</span><p>A mystery sample's mean falls below the 2.5% quantile of your sampling distribution. What do you conclude?</p>
-      <details><summary>Show answer</summary><div class="ans"><p>It falls outside the middle 95%, so it is <b>unlikely to come from that population</b>.</p></div></details></div>
-    <div class="q"><span class="num">Q3</span><p>Which chart would you use for the distribution of one numeric variable, like everyone's height?</p>
+    <div class="q"><span class="num">Q2</span><p>You built 2000 means of 16 random US states, as in the "mystery sample" card. Their 2.5% quantile is 2583. A mystery sample of 16 numbers has a mean of 2276, below that cut point. What do you conclude?</p>
+      <details><summary>Show answer</summary><div class="ans"><p>It falls outside the middle 95%, so it is <b>unlikely to come from that population</b>. Fewer than 2.5% of real 16-state samples have a mean that low.</p></div></details></div>
+    <div class="q"><span class="num">Q3</span><p>A data frame <code>df</code> has one row per person and a <code>height</code> column. Which chart would you use to see how the heights are spread out?</p>
       <details><summary>Show answer</summary><div class="ans"><p>A <b>histogram</b>: <code>ggplot(df, aes(x = height)) + geom_histogram()</code>.</p></div></details></div>
-    <div class="q"><span class="num">Q4</span><p>Fill the blank to make a scatter plot of <code>wt</code> (x) against <code>mpg</code> (y) from <code>mtcars</code>.</p><pre>ggplot(mtcars, aes(x = wt, y = mpg)) + ______</pre>
+    <div class="q"><span class="num">Q4</span><p><code>mtcars</code> is a table of 32 cars that comes with R; <code>wt</code> is each car's weight (in 1000 lb) and <code>mpg</code> its miles per gallon. Fill the blank to make a scatter plot of <code>wt</code> (x) against <code>mpg</code> (y).</p><pre>ggplot(mtcars, aes(x = wt, y = mpg)) + ______</pre>
       <details><summary>Show answer</summary><div class="ans"><p><code>geom_point()</code></p></div></details></div>
     <div class="q"><span class="num">Q5</span><p>What does this return?</p><pre>a &lt;- data.frame(state = c("NY", "CA"), pop = c(19, 39))
 b &lt;- data.frame(name = c("NY", "TX"), area = c(54, 268))
@@ -381,7 +395,14 @@ merge(a, b, by.x = "state", by.y = "name")</pre>
 
   <div class="card">
     <h3>Linear regression with <code>lm()</code></h3>
-<pre>lmOut &lt;- lm(repairs ~ oilChanges + miles, data = oil)
+    <p>The question: do cars that get more oil changes have smaller repair bills, once you allow for how far they were driven? The data frame <code>oil</code> (from the course lecture) has 14 cars, with each car's number of oil changes, miles driven and repair cost in dollars.</p>
+<pre>oilChanges &lt;- c(3, 5, 2, 3, 2, 6, 6, 4, 3, 2, 0, 8, 7, 8)
+repairs &lt;- c(300, 300, 500, 400, 700, 420, 100, 290, 475, 620, 600, 150, 200, 50)
+miles &lt;- c(100500, 116000, 136000, 110500, 150500, 117000, 89500,
+           99500, 100500, 120500, 106000, 115000, 104000, 98500)
+oil &lt;- data.frame(oilChanges, repairs, miles)
+
+lmOut &lt;- lm(repairs ~ oilChanges + miles, data = oil)
 summary(lmOut)
 <span class="c">#              Estimate  Pr(&gt;|t|)
 # (Intercept)    35.72    0.840
@@ -390,10 +411,10 @@ summary(lmOut)
 # Adjusted R-squared: 0.8615</span></pre>
     <ul>
       <li><b>Formula:</b> the outcome (dependent variable) goes left of <code>~</code>; the predictors (independent variables) go right, joined with <code>+</code>.</li>
-      <li><b>Coefficient (estimate):</b> how much y changes when that x goes up by 1, keeping the others fixed. Here each extra oil change cuts repairs by about <b>$57</b>.</li>
+      <li><b>Coefficient (estimate):</b> how much y changes when that x goes up by 1, keeping the others fixed. Here each extra oil change cuts repairs by about <b>$57</b>, and each extra 1,000 miles adds about $5 (0.0051 × 1,000).</li>
       <li><b>p-value</b> <code>Pr(&gt;|t|)</code>: below 0.05 means the predictor is <b>significant</b>. More stars means stronger evidence.</li>
-      <li><b>Adjusted R²:</b> the share of variation in y the model explains. 0.86 means 86%. Use the adjusted version to compare models.</li>
-      <li><b>Predict new cases:</b> <code>predict(lmOut, newDF)</code>, where <code>newDF</code> has the same column names as the predictors.</li>
+      <li><b>Adjusted R²:</b> the share of variation in y the model explains. Here 0.86 means oil changes and miles together explain 86% of the differences in repair costs. Use the adjusted version to compare models.</li>
+      <li><b>Predict new cases:</b> <code>predict(lmOut, newDF)</code>, where <code>newDF</code> is a data frame of new cars with the same column names as the predictors, here <code>oilChanges</code> and <code>miles</code>.</li>
     </ul>
     <p class="warn"><b>Exam phrase:</b> "Does X influence Y?" Correlation is not causation, so the model shows a relationship, not proof that X causes Y.</p>
     <div class="new"><span class="newh">New in this code</span><dl><div><dt>lm()</dt><dd><b>L</b>inear <b>m</b>odel: fits a regression line. <code>data = oil</code> says which data frame the columns come from.</dd></div><div><dt>y ~ x1 + x2</dt><dd>A formula. Read <code>~</code> as “is predicted by”; <code>+</code> adds another predictor.</dd></div><div><dt>summary(model)</dt><dd>On a model, prints the full report: coefficients, p-values, R² and more.</dd></div><div><dt>5.08e-05</dt><dd>Scientific notation: 5.08 × 10<sup>−5</sup> = 0.0000508. Move the decimal point 5 places left.</dd></div><div><dt>***</dt><dd>Significance stars: *** means p &lt; 0.001, ** means p &lt; 0.01, * means p &lt; 0.05.</dd></div></dl></div>
@@ -401,52 +422,55 @@ summary(lmOut)
 
   <div class="card">
     <h3>Training and testing</h3>
+    <p>The rest of Part 3 uses one example: can we predict who survived the Titanic? The data frame <code>titanic</code> has one row for each of the 2,201 people on board, with four columns: <code>Class</code> (1st, 2nd, 3rd or Crew), <code>Sex</code>, <code>Age</code> (Adult or Child) and <code>Survived</code> (No or Yes). R's built-in <code>Titanic</code> table holds the same data as counts.</p>
 <pre>set.seed(111)                                   <span class="c"># repeatable split</span>
-trainList &lt;- createDataPartition(y = df$outcome, p = 0.6, list = FALSE)
-trainSet &lt;- df[trainList, ]                      <span class="c"># 60% to learn from</span>
-testSet  &lt;- df[-trainList, ]                     <span class="c"># 40% held back to check</span></pre>
+trainList &lt;- createDataPartition(y = titanic$Survived, p = 0.6, list = FALSE)
+trainSet &lt;- titanic[trainList, ]                 <span class="c"># 60% to learn from</span>
+testSet  &lt;- titanic[-trainList, ]                <span class="c"># 40% held back to check</span></pre>
     <div class="sql"><b>Dev brain:</b> the training set is your local dev data and the test set is production data the model has never seen. A model that only works on data it trained on is <b>overfitting</b>, like code that passes only the tests you wrote it against.</div>
-    <p><code>createDataPartition()</code> keeps the same share of each class in both sets, so a 30/70 mix stays 30/70.</p>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>set.seed()</dt><dd>Fixes R's random numbers so the same rows are picked every time you run the code.</dd></div><div><dt>createDataPartition()</dt><dd>From the caret package (<code>library(caret)</code>): picks row numbers for the training set. <code>y</code> is the outcome column to balance on, <code>p = 0.6</code> means 60%, and <code>list = FALSE</code> returns plain row numbers instead of a list.</dd></div><div><dt>df[trainList, ]</dt><dd>Keeps the rows whose numbers are in trainList, with all columns.</dd></div><div><dt>df[-trainList, ]</dt><dd>The minus keeps every row <b>except</b> those, which gives the test set.</dd></div></dl></div>
+    <p><code>createDataPartition()</code> keeps the same share of each class in both sets. About 32% of the people survived (711 of 2,201), so the training set (1,321 rows) and the test set (880 rows) are each about 32% "Yes".</p>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>set.seed()</dt><dd>Fixes R's random numbers so the same rows are picked every time you run the code.</dd></div><div><dt>createDataPartition()</dt><dd>From the caret package (<code>library(caret)</code>): picks row numbers for the training set. <code>y</code> is the outcome column to balance on, <code>p = 0.6</code> means 60%, and <code>list = FALSE</code> returns plain row numbers instead of a list.</dd></div><div><dt>titanic[trainList, ]</dt><dd>Keeps the rows whose numbers are in trainList, with all columns.</dd></div><div><dt>titanic[-trainList, ]</dt><dd>The minus keeps every row <b>except</b> those, which gives the test set.</dd></div></dl></div>
   </div>
 
   <div class="card">
     <h3>Trees and SVMs</h3>
 <pre>cartTree &lt;- rpart(Survived ~ ., data = trainSet)    <span class="c"># decision tree; "." = all columns</span>
-mod1 &lt;- ksvm(Class ~ ., data = trainSet, C = 5, cross = 3, prob.model = TRUE)
-pred &lt;- predict(mod1, testSet)</pre>
+mod1 &lt;- ksvm(Survived ~ ., data = trainSet, C = 5, cross = 3, prob.model = TRUE)
+pred &lt;- predict(mod1, testSet)                       <span class="c"># "No" or "Yes" for each test passenger</span></pre>
+    <p>Both models learn from the Titanic training set above how <code>Class</code>, <code>Sex</code> and <code>Age</code> relate to <code>Survived</code>. Then the SVM guesses survival for the test passengers it has never seen.</p>
     <ul>
       <li><b>Decision tree (CART, <code>rpart</code>):</b> a chain of yes/no questions, like a big nested <code>if/else</code>. Easy to read.</li>
       <li><b>SVM (<code>ksvm</code>):</b> draws the widest possible boundary between classes. The <b>support vectors</b> are the hard cases closest to the line. The <b>kernel trick</b> lets it draw curved boundaries.</li>
       <li><code>C</code> is the cost of mistakes, and <code>cross = 3</code> runs 3-fold cross-validation. The <b>cross-validation error</b> is the best estimate of real-world error, since <b>training error</b> is always too optimistic.</li>
     </ul>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>rpart()</dt><dd>From the rpart package: builds a decision tree. <code>Survived ~ .</code> means “predict Survived from every other column”.</dd></div><div><dt>ksvm()</dt><dd>From the kernlab package: builds a support vector machine.</dd></div><div><dt>prob.model = TRUE</dt><dd>Also lets the SVM give a probability for each class, not just a yes/no answer.</dd></div><div><dt>predict(model, testSet)</dt><dd>Runs the trained model on new rows and returns its predictions.</dd></div></dl></div>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>rpart()</dt><dd>From the rpart package: builds a decision tree. <code>Survived ~ .</code> means “predict Survived from every other column”.</dd></div><div><dt>ksvm()</dt><dd>From the kernlab package: builds a support vector machine. It uses the same <code>Survived ~ .</code> formula.</dd></div><div><dt>prob.model = TRUE</dt><dd>Also lets the SVM give a probability for each class, not just a yes/no answer.</dd></div><div><dt>predict(model, testSet)</dt><dd>Runs the trained model on new rows and returns its predictions.</dd></div></dl></div>
   </div>
 
   <div class="card">
     <h3>Confusion matrix and accuracy</h3>
-<pre>cm &lt;- table(pred, testSet$actual)
-<span class="c">#        actual
-# pred    No Yes
-#   No    50  10
-#   Yes    5  35</span>
+    <p>How good are the SVM's survival guesses? Compare them with what really happened. To keep the math easy, suppose the test set had just 100 passengers and the table came out like this:</p>
+<pre>cm &lt;- table(pred, actual = testSet$Survived)
+<span class="c">#      actual
+# pred  No Yes
+#   No  50  10
+#   Yes  5  35</span>
 sum(diag(cm)) / sum(cm)      <span class="c"># (50 + 35) / 100 = 0.85</span>
-confusionMatrix(pred, testSet$actual)    <span class="c"># caret does it for you</span></pre>
+confusionMatrix(pred, testSet$Survived)  <span class="c"># caret does it for you</span></pre>
     <ul>
       <li>The <b>diagonal</b> holds the correct predictions; everything off it is a mistake.</li>
-      <li><b>No Information Rate (NIR):</b> the accuracy you'd get by always guessing the most common class. <b>Your model must beat it</b> to be useful. If 80% of cases are "No", 80% accuracy is worthless.</li>
-      <li><b>Sensitivity</b> is how many real "Yes" cases you caught; <b>specificity</b> is how many real "No" cases you got right.</li>
+      <li><b>No Information Rate (NIR):</b> the accuracy you'd get by always guessing the most common class. <b>Your model must beat it</b> to be useful. If 80% of cases are "No", 80% accuracy is worthless. Here 55 of the 100 real answers are "No" (50 + 5), so the NIR is 0.55, and 0.85 beats it easily.</li>
+      <li><b>Sensitivity</b> is how many real "Yes" cases you caught: 35 of 45, or 0.78. <b>Specificity</b> is how many real "No" cases you got right: 50 of 55, or 0.91. (<code>confusionMatrix()</code> treats the first level, "No", as the positive class, so it swaps these two unless you add <code>positive = "Yes"</code>.)</li>
     </ul>
-    <div class="new"><span class="newh">New in this code</span><dl><div><dt>table(pred, actual)</dt><dd>With two vectors, <code>table()</code> counts every combination: predictions down the side, real answers across the top. That grid is the confusion matrix.</dd></div><div><dt>diag()</dt><dd>Takes the diagonal of the grid, top-left to bottom-right: the correct predictions.</dd></div><div><dt>sum(diag(cm)) / sum(cm)</dt><dd>Correct predictions divided by all predictions, which is the accuracy.</dd></div><div><dt>confusionMatrix()</dt><dd>From caret: builds the same grid and prints accuracy, the No Information Rate, a p-value and more. Give it the predictions first, then the real answers.</dd></div></dl></div>
+    <div class="new"><span class="newh">New in this code</span><dl><div><dt>table(pred, actual = …)</dt><dd>With two vectors, <code>table()</code> counts every combination: predictions down the side, real answers across the top. That grid is the confusion matrix. Naming the second vector <code>actual</code> puts that label over the columns.</dd></div><div><dt>diag()</dt><dd>Takes the diagonal of the grid, top-left to bottom-right: the correct predictions.</dd></div><div><dt>sum(diag(cm)) / sum(cm)</dt><dd>Correct predictions divided by all predictions, which is the accuracy.</dd></div><div><dt>confusionMatrix()</dt><dd>From caret: builds the same grid and prints accuracy, the No Information Rate, a p-value and more. Give it the predictions first, then the real answers.</dd></div></dl></div>
   </div>
 
   <div class="card">
-    <span class="pill">Lecture 10 · Oct 29</span>
+    <span class="pill">Week 10</span>
     <h3>Ethics and association rules (preview)</h3>
-    <p class="warn">Covered in tomorrow's lecture, so add the details from class.</p>
+    <p class="warn">These two topics come last before the midterm, so this card gives only the key ideas.</p>
     <ul>
       <li><b>Ethics:</b> models copy bias in their training data, can be less accurate for some groups, raise privacy issues, and are hard to explain. Decisions about people need fairness checks and human review.</li>
-      <li><b>Association rules</b> (unsupervised) are "people who buy X also buy Y". <b>Support</b> is how often items appear together, <b>confidence</b> is how often Y appears when X does, and <b>lift</b> above 1 means the link is stronger than chance.</li>
+      <li><b>Association rules</b> (unsupervised) are "people who buy X also buy Y". <b>Support</b> is how often items appear together, <b>confidence</b> is how often Y appears when X does, and <b>lift</b> above 1 means the link is stronger than chance. Example: a store has 100 receipts; 20 include bread, 25 include butter, and 10 include both. For "bread → butter", support is 10 / 100 = 0.10, confidence is 10 / 20 = 0.50, and lift is 0.50 / 0.25 = 2, so bread buyers are twice as likely as the average shopper to buy butter.</li>
     </ul>
   </div>
 
@@ -454,18 +478,18 @@ confusionMatrix(pred, testSet$actual)    <span class="c"># caret does it for you
   <div class="quiz" data-quiz="q3">
     <div class="q"><span class="num">Q1</span><p>Classification or regression? (a) predicting tomorrow's temperature; (b) predicting whether a loan defaults.</p>
       <details><summary>Show answer</summary><div class="ans"><p>(a) <b>Regression</b>, since it's a number. (b) <b>Classification</b>, since it's a category (yes or no).</p></div></details></div>
-    <div class="q"><span class="num">Q2</span><p>In <code>lm(price ~ sqft + bedrooms, data = houses)</code>, which is the dependent variable?</p>
+    <div class="q"><span class="num">Q2</span><p><code>houses</code> is a data frame of homes that sold, with each home's <code>price</code> in dollars, its size in square feet (<code>sqft</code>) and its number of <code>bedrooms</code>. In <code>lm(price ~ sqft + bedrooms, data = houses)</code>, which is the dependent variable?</p>
       <details><summary>Show answer</summary><div class="ans"><p><code>price</code>, the left side of <code>~</code>. <code>sqft</code> and <code>bedrooms</code> are the predictors.</p></div></details></div>
-    <div class="q"><span class="num">Q3</span><p>The coefficient for <code>sqft</code> is 50 with p = 0.001. Interpret it.</p>
+    <div class="q"><span class="num">Q3</span><p>In the Q2 house-price model, <code>summary()</code> shows that the coefficient for <code>sqft</code> is 50 with p = 0.001. Interpret it.</p>
       <details><summary>Show answer</summary><div class="ans"><p>It's significant (p &lt; 0.05). Each extra square foot adds about <b>$50</b> to the price, holding bedrooms constant.</p></div></details></div>
-    <div class="q"><span class="num">Q4</span><p>Compute the accuracy of this confusion matrix.</p><pre>        actual
+    <div class="q"><span class="num">Q4</span><p>A model predicts whether each of 100 emails is spam (1) or not (0). Compute its accuracy from this confusion matrix.</p><pre>        actual
 pred     0   1
    0    40  10
    1    10  40</pre>
       <details><summary>Show answer</summary><div class="ans"><p>(40 + 40) / 100 = <b>0.80</b>, or 80%.</p></div></details></div>
     <div class="q"><span class="num">Q5</span><p>Why do we test on data the model never saw?</p>
       <details><summary>Show answer</summary><div class="ans"><p>To estimate real-world performance and catch <b>overfitting</b>, when a model memorizes the training data but fails on new data.</p></div></details></div>
-    <div class="q"><span class="num">Q6</span><p>Accuracy is 0.71 and the No Information Rate is 0.70. Is this a good model?</p>
+    <div class="q"><span class="num">Q6</span><p>In a test set, 70% of customers did not cancel their subscription and 30% did, so the No Information Rate is 0.70. A model that predicts who cancels gets an accuracy of 0.71. Is this a good model?</p>
       <details><summary>Show answer</summary><div class="ans"><p><b>No.</b> Always guessing the most common class already gets 70%, so the model adds almost nothing.</p></div></details></div>
   </div>
 </section>
@@ -484,7 +508,9 @@ v[-2]</pre>
     <div class="q"><span class="num">3 · Output</span><p>What is <code>mode(c(1, TRUE, "x"))</code>?</p>
       <details><summary>Show answer</summary><div class="ans"><p><code>"character"</code>. One string turns the whole vector into text.</p><label class="got"><input type="checkbox" id="m3"> I got it right</label></div></details></div>
     <div class="q"><span class="num">4 · Output</span><p>Given:</p><pre>pets &lt;- data.frame(type = c("cat", "dog", "cat"), age = c(2, 5, 4))</pre><p>What does <code>pets %&gt;% group_by(type) %&gt;% summarize(avgAge = mean(age))</code> return?</p>
-      <details><summary>Show answer</summary><div class="ans"><pre>  type  avgAge
+      <details><summary>Show answer</summary><div class="ans"><pre># A tibble: 2 × 2
+  type  avgAge
+  &lt;chr&gt;  &lt;dbl&gt;
 1 cat        3
 2 dog        5</pre><p>The cats are (2 + 4) / 2 = 3; the dog is 5.</p><label class="got"><input type="checkbox" id="m4"> I got it right</label></div></details></div>
     <div class="q"><span class="num">5 · Output</span><p>Using <code>pets</code> above, what does <code>pets[pets$age &gt; 3, "type"]</code> return?</p>
@@ -493,25 +519,25 @@ v[-2]</pre>
       <details><summary>Show answer</summary><div class="ans"><pre>doubleIt &lt;- function(x) {
   x * 2
 }</pre><label class="got"><input type="checkbox" id="m6"> I got it right</label></div></details></div>
-    <div class="q"><span class="num">7 · Write code</span><p>From a data frame <code>cars</code>, keep rows where <code>mpg &gt; 25</code> and sort them from highest to lowest <code>mpg</code>, using pipes.</p>
-      <details><summary>Show answer</summary><div class="ans"><pre>cars %&gt;% filter(mpg &gt; 25) %&gt;% arrange(desc(mpg))</pre><label class="got"><input type="checkbox" id="m7"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">7 · Write code</span><p>A data frame <code>myCars</code> has one row per car and an <code>mpg</code> column (miles per gallon). Using pipes, keep the cars with <code>mpg &gt; 25</code> and sort them from highest to lowest <code>mpg</code>.</p>
+      <details><summary>Show answer</summary><div class="ans"><pre>myCars %&gt;% filter(mpg &gt; 25) %&gt;% arrange(desc(mpg))</pre><label class="got"><input type="checkbox" id="m7"> I got it right</label></div></details></div>
     <div class="q"><span class="num">8 · Concept</span><p>What is the difference between a population and a sample? Why do we use samples?</p>
       <details><summary>Show answer</summary><div class="ans"><p>The population is the whole group and the sample is the part we measure. Measuring everyone is usually too expensive or impossible, so we infer from a sample.</p><label class="got"><input type="checkbox" id="m8"> I got it right</label></div></details></div>
     <div class="q"><span class="num">9 · Concept</span><p>State the Central Limit Theorem in one sentence.</p>
       <details><summary>Show answer</summary><div class="ans"><p>The means of many random samples form a roughly normal distribution centered on the population mean, even if the population isn't normal.</p><label class="got"><input type="checkbox" id="m9"> I got it right</label></div></details></div>
     <div class="q"><span class="num">10 · Output</span><p>What does <code>quantile(1:100, c(0.25, 0.75))</code> return (roughly)?</p>
       <details><summary>Show answer</summary><div class="ans"><p>About <code>25.75</code> and <code>75.25</code>: the 25th and 75th percentiles.</p><label class="got"><input type="checkbox" id="m10"> I got it right</label></div></details></div>
-    <div class="q"><span class="num">11 · Write code</span><p>Write ggplot code for a histogram of the <code>hwy</code> column in the <code>mpg</code> data frame.</p>
+    <div class="q"><span class="num">11 · Write code</span><p>Write ggplot code for a histogram of the <code>hwy</code> column (highway miles per gallon) in the <code>mpg</code> data frame, ggplot2's built-in table of 234 cars.</p>
       <details><summary>Show answer</summary><div class="ans"><pre>ggplot(mpg, aes(x = hwy)) + geom_histogram()</pre><label class="got"><input type="checkbox" id="m11"> I got it right</label></div></details></div>
     <div class="q"><span class="num">12 · Concept</span><p>What does <code>merge(a, b, by = "id", all.x = TRUE)</code> do, in SQL terms?</p>
       <details><summary>Show answer</summary><div class="ans"><p>A <b>LEFT JOIN</b> of <code>a</code> and <code>b</code> on <code>id</code>. Every row of <code>a</code> is kept, with <code>NA</code> where <code>b</code> has no match.</p><label class="got"><input type="checkbox" id="m12"> I got it right</label></div></details></div>
-    <div class="q"><span class="num">13 · Interpret</span><p>A model has adjusted R² = 0.42 and a predictor with coefficient −3.1 and p = 0.20. Explain both numbers.</p>
-      <details><summary>Show answer</summary><div class="ans"><p>The model explains about <b>42%</b> of the variation in the outcome. The predictor is <b>not significant</b> (p &gt; 0.05), so we can't trust its −3.1 effect.</p><label class="got"><input type="checkbox" id="m13"> I got it right</label></div></details></div>
-    <div class="q"><span class="num">14 · Calculate</span><p>Compute the accuracy, and say whether the model beats an NIR of 0.75.</p><pre>        actual
+    <div class="q"><span class="num">13 · Interpret</span><p>A linear model predicts students' exam scores (out of 100) from several habits, including hours of TV per week. Its <code>summary()</code> shows adjusted R² = 0.42, and the TV coefficient is −3.1 with p = 0.20. Explain both numbers.</p>
+      <details><summary>Show answer</summary><div class="ans"><p>The model explains about <b>42%</b> of the variation in exam scores. The TV coefficient says each extra hour of TV goes with a score about 3.1 points lower, but it is <b>not significant</b> (p &gt; 0.05), so we can't trust that effect; it could easily be chance.</p><label class="got"><input type="checkbox" id="m13"> I got it right</label></div></details></div>
+    <div class="q"><span class="num">14 · Calculate</span><p>A model predicts whether each of 100 shoppers will buy something (Yes) or not (No). Compute its accuracy and the No Information Rate from this confusion matrix, and say whether the model beats the NIR.</p><pre>        actual
 pred     No  Yes
   No     60   15
   Yes     5   20</pre>
-      <details><summary>Show answer</summary><div class="ans"><p>(60 + 20) / 100 = <b>0.80</b>. Yes, it beats 0.75, but only by 5 points. It also misses 15 of the 35 real "Yes" cases.</p><label class="got"><input type="checkbox" id="m14"> I got it right</label></div></details></div>
+      <details><summary>Show answer</summary><div class="ans"><p>Accuracy is (60 + 20) / 100 = <b>0.80</b>. The real answers are 65 "No" (60 + 5) and 35 "Yes" (15 + 20), so always guessing "No" would score 65 / 100 and the NIR is <b>0.65</b>. The model beats it by 15 points, but it still misses 15 of the 35 real "Yes" cases.</p><label class="got"><input type="checkbox" id="m14"> I got it right</label></div></details></div>
     <div class="q"><span class="num">15 · Concept</span><p>Why is the cross-validation error a better estimate of real-world performance than the training error in <code>ksvm()</code> output?</p>
       <details><summary>Show answer</summary><div class="ans"><p>Training error is measured on data the model learned from, so it's too optimistic. Cross-validation tests the model on parts of the data it didn't train on, which is closer to new, unseen data.</p><label class="got"><input type="checkbox" id="m15"> I got it right</label></div></details></div>
   </div>
