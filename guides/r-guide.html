@@ -575,7 +575,7 @@ mode(v)     <span class="c"># "numeric"   ← TRAP: mode() gives the TYPE, not t
 <pre>var(c(2, 4, 6))   <span class="c"># 4   deviations -2, 0, 2 → squares 4, 0, 4 → sum 8 → 8 / (3 - 1)</span>
 sd(c(2, 4, 6))    <span class="c"># 2</span></pre>
     <div class="new"><span class="newh">New in this code</span><dl><div><dt>var()</dt><dd>Variance: the sum of squared deviations divided by n − 1 (R treats your data as a sample).</dd></div><div><dt>sd()</dt><dd>Standard deviation: the square root of the variance, in the same units as the data.</dd></div></dl></div>
-    <p class="warn"><b>Why spread matters (the truck example):</b> containers A are 2, 5, 5 tons and B are 1, 3, 8 tons. Both have a mean of 4, but the range of A is 3 and of B is 7. B needs the bigger truck. The mean alone hides that. SD is easier to explain than variance because it's in tons, not "squared tons".</p>
+    <p class="warn"><b>Why spread matters (the truck example):</b> a company puts each container on its own truck and must pick one truck size for a whole group: 7 tons (cheaper) or 10 tons. The truck must fit the heaviest container. Group A weighs 2, 5 and 5 tons; group B weighs 1, 3 and 8 tons. Both average 4 tons, so the mean suggests 7-ton trucks are fine for both. But B's 8-ton container won't fit, so B needs 10-ton trucks. The spread reveals this: A's range is 3 (sd 1.73), while B's is 7 (sd 3.61), so B has values far from the average. The SD is easier to explain than the variance because it's in tons, not "squared tons".</p>
   </div>
 
   <div class="card">

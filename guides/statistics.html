@@ -213,15 +213,32 @@ median(salary)   <span class="c"># 36.5    still looks like a normal salary</spa
 <section id="spread">
   <span class="num">2 · Spread (dispersion)</span>
   <h2>Range, variance and standard deviation: how far apart?</h2>
-  <p>Two groups can have the same mean and still be very different. The lecture's truck example: you must pick a truck for one container, either a 10-ton or a 7-ton truck.</p>
+  <p>Two groups can have the same mean and still be very different. This example from the lecture shows why.</p>
+  <h3>The situation</h3>
+  <ul>
+    <li>A company ships containers. Each container goes on its own truck.</li>
+    <li>It can rent two truck sizes: a <b>7-ton truck</b> (cheaper) or a <b>10-ton truck</b> (more expensive). A truck can't carry a container heavier than its size.</li>
+    <li>It must choose <b>one truck size for a whole group</b> of containers, so the truck has to fit the <b>heaviest</b> container in the group.</li>
+    <li>Two groups each weigh <b>4 tons on average</b>:</li>
+  </ul>
   <div class="tbl"><table>
-    <thead><tr><th>Group</th><th>Containers (tons)</th><th>Mean</th><th>Range</th><th>sd()</th></tr></thead>
+    <thead><tr><th>Group</th><th>Container weights (tons)</th><th class="r">Mean</th><th class="r">Heaviest</th><th>Truck needed</th></tr></thead>
     <tbody>
-      <tr><td>A</td><td>2, 5, 5</td><td class="r">4</td><td class="r">3</td><td class="r">1.73</td></tr>
-      <tr><td>B</td><td>1, 3, 8</td><td class="r">4</td><td class="r">7</td><td class="r">3.61</td></tr>
+      <tr><td>A</td><td>2, 5, 5</td><td class="r">4</td><td class="r">5</td><td>7-ton is enough</td></tr>
+      <tr><td>B</td><td>1, 3, 8</td><td class="r">4</td><td class="r">8</td><td><b>10-ton</b> (8 tons won't fit on a 7-ton truck)</td></tr>
     </tbody>
   </table></div>
-  <p>Both means are 4, but group B has an 8-ton container, so a 7-ton truck can't be used for it. The mean alone hides that. Spread tells you how risky "typical" is.</p>
+  <h3>What goes wrong if you only look at the mean</h3>
+  <p>Both means are 4 tons. A 4-ton container fits easily on a 7-ton truck, so the mean tells you “7-ton trucks are fine for both groups”. That's right for A but <b>wrong for B</b>: its 8-ton container won't fit. The mean hid the problem, because it says nothing about how far the individual containers are from 4.</p>
+  <h3>What the spread shows</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Group</th><th class="r">Range (heaviest − lightest)</th><th class="r">Standard deviation, <code>sd()</code></th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td class="r">5 − 2 = 3</td><td class="r">1.73</td><td>Containers sit close to 4 tons (typically about 1.7 tons away)</td></tr>
+      <tr><td>B</td><td class="r">8 − 1 = 7</td><td class="r">3.61</td><td>Containers are scattered far from 4 tons (typically about 3.6 tons away)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="plain">The bigger range and sd warn you that group B has containers far from the average, so planning for “typical” (4 tons) is risky. <b>The mean says what is typical; the spread says how far real values can be from typical.</b> Always look at both.</p>
 
   <div class="why"><h3>Range</h3><dl><div><dt>What it's for</dt><dd>Shows the full stretch of the data from the lowest to the highest value.</dd></div><div><dt>How it works</dt><dd>Max minus min. It uses only two values, so a single outlier changes it completely.</dd></div><div><dt>Use it when</dt><dd>You need a quick sense of the limits (“prices run from $5 to $90”) or you are checking for typos, like a person aged 250.</dd></div></dl></div>
   <h3>The five steps, worked by hand</h3>
